@@ -106,7 +106,6 @@ dependencies {
     // Coil
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
-    implementation(libs.coil.svg)
 
     // Shimmer
     implementation(libs.compose.shimmer)

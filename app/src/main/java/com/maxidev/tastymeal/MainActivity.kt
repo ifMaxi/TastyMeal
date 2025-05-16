@@ -16,7 +16,6 @@ import coil3.request.CachePolicy
 import coil3.request.allowHardware
 import coil3.request.allowRgb565
 import coil3.request.crossfade
-import coil3.svg.SvgDecoder
 import coil3.util.DebugLogger
 import com.maxidev.tastymeal.navigation.NavigationGraph
 import com.maxidev.tastymeal.presentation.theme.TastyMealTheme
@@ -60,7 +59,6 @@ private fun getAsyncImageLoader(context: PlatformContext): ImageLoader {
         .diskCachePolicy(policy = cachePolicy)
         .diskCache { newDiskCache() }
         .networkCachePolicy(policy = cachePolicy)
-        .components { add(SvgDecoder.Factory()) }
         .coroutineContext(Dispatchers.IO)
         .logger(DebugLogger())
         .build()
