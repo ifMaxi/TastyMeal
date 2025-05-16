@@ -37,7 +37,8 @@ import com.maxidev.tastymeal.presentation.theme.TastyMealTheme
 
 @Composable
 fun SearchScreen(
-    viewModel: SearchViewModel = hiltViewModel()
+    viewModel: SearchViewModel = hiltViewModel(),
+    onClick: (String) -> Unit
 ) {
     val state by viewModel.searchState.collectAsStateWithLifecycle()
     val lazyState = rememberLazyListState()
@@ -48,7 +49,8 @@ fun SearchScreen(
         onQueryChange = viewModel::onInputChange,
         onSearch = viewModel::searchMeals,
         paging = state,
-        lazyState = lazyState
+        lazyState = lazyState,
+        onClick = onClick
     )
 }
 
@@ -58,7 +60,8 @@ private fun SearchScreenContent(
     onQueryChange: (String) -> Unit,
     onSearch: (String) -> Unit,
     paging: SearchUiState,
-    lazyState: LazyListState = rememberLazyListState()
+    lazyState: LazyListState = rememberLazyListState(),
+    onClick: (String) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -85,7 +88,10 @@ private fun SearchScreenContent(
                     val item = pagingState[index]
 
                     if (item != null) {
-                        CardMealItem(content = item)
+                        CardMealItem(
+                            content = item,
+                            onClick = onClick
+                        )
                     }
                 }
 
@@ -117,10 +123,14 @@ private fun SearchScreenContent(
 }
 
 @Composable
-fun CardMealItem(content: MinimalMeal) {
+fun CardMealItem(
+    content: MinimalMeal,
+    onClick: (String) -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(8.dp)
+        elevation = CardDefaults.cardElevation(8.dp),
+        onClick = { onClick(content.idMeal) }
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
@@ -161,7 +171,8 @@ private fun CardMealItemPreview() {
                 strMealThumb = "image",
                 strCategory = "Beef",
                 idMeal = "0"
-            )
+            ),
+            onClick = {}
         )
     }
 }
