@@ -2,6 +2,7 @@ package com.maxidev.tastymeal.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Create
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Search
@@ -22,6 +23,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.maxidev.tastymeal.presentation.detail.MealDetailScreen
 import com.maxidev.tastymeal.presentation.home.HomeScreen
 import com.maxidev.tastymeal.presentation.search.SearchScreen
 import kotlinx.serialization.Serializable
@@ -35,7 +37,7 @@ fun NavigationGraph(
         bottomBar = {
             NavigationBar {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination =  navBackStackEntry?.destination
+                val currentDestination = navBackStackEntry?.destination
 
                 topLevelRoutes.forEach { topLevelRoute ->
                     NavigationBarItem(
@@ -71,10 +73,22 @@ fun NavigationGraph(
             startDestination = startDestination
         ) {
             composable<NavDestinations.Home> {
-                HomeScreen()
+                HomeScreen(
+                    onClick = { mealId ->
+                        navController.navigate(NavDestinations.MealDetail(mealId))
+                    }
+                )
             }
             composable<NavDestinations.Search> {
-                SearchScreen()
+                SearchScreen(
+                    onClick = { mealId ->
+                        navController.navigate(NavDestinations.MealDetail(mealId))
+                    }
+                )
+            }
+
+            composable<NavDestinations.MealDetail> {
+                MealDetailScreen()
             }
         }
     }
@@ -85,6 +99,8 @@ sealed interface NavDestinations {
     @Serializable data object Search : NavDestinations
     @Serializable data object Favorites: NavDestinations
     @Serializable data object Settings : NavDestinations
+    @Serializable data object MyRecipes: NavDestinations
+    @Serializable data class MealDetail(val mealId: String) : NavDestinations
 }
 
 data class TopLevelRoute<T: Any>(
@@ -103,6 +119,11 @@ val topLevelRoutes = listOf(
         route = NavDestinations.Search,
         icon = Icons.Rounded.Search,
         name = "Search"
+    ),
+    TopLevelRoute(
+        route = NavDestinations.MyRecipes,
+        icon = Icons.Rounded.Create,
+        name = "My recipes"
     ),
     TopLevelRoute(
         route = NavDestinations.Favorites,

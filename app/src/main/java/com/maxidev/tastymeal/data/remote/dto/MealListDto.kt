@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MealListDto(
-    val meals: List<MealDto?>? = listOf()
+    val meals: List<MealDto> = listOf()
 )
 
 @Serializable

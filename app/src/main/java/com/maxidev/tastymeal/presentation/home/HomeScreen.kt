@@ -98,6 +98,8 @@ private fun HomeScreenContent(
         LaunchedEffect(pagerState, pageInteractionSource) {
             while (true) {
                 delay(2000)
+
+                // TODO: FIX Arithmetic exception
                 val nextPage = (pagerState.currentPage + 1) % pagingItems.itemCount
                 pagerState.animateScrollToPage(nextPage)
             }

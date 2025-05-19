@@ -3,6 +3,8 @@ package com.maxidev.tastymeal.di
 import com.maxidev.tastymeal.data.repository.HomeRepositoryImpl
 import com.maxidev.tastymeal.data.repository.SearchMealRepositoryImpl
 import com.maxidev.tastymeal.domain.repository.HomeRepository
+import com.maxidev.tastymeal.domain.repository.MealDetailRepository
+import com.maxidev.tastymeal.data.repository.MealDetailRepositoryImpl
 import com.maxidev.tastymeal.domain.repository.SearchMealRepository
 import dagger.Binds
 import dagger.Module
@@ -18,4 +20,7 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindSearchMealRepository(impl: SearchMealRepositoryImpl): SearchMealRepository
+
+    @Binds
+    abstract fun bindMealDetailRepository(impl: MealDetailRepositoryImpl): MealDetailRepository
 }

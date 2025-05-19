@@ -6,7 +6,6 @@ import kotlinx.serialization.Serializable
 data class MealDto(
     val idMeal: String? = "",
     val strMeal: String? = "",
-    val strMealAlternate: String? = "",
     val strCategory: String? = "",
     val strArea: String? = "",
     val strInstructions: String? = "",
@@ -53,6 +52,5 @@ data class MealDto(
     val strMeasure18: String? = "",
     val strMeasure19: String? = "",
     val strMeasure20: String? = "",
-    val strSource: String? = "",
-    val strImageSource: String? = ""
+    val strSource: String? = ""
 )

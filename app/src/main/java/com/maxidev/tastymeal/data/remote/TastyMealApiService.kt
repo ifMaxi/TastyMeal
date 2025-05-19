@@ -2,7 +2,7 @@ package com.maxidev.tastymeal.data.remote
 
 import com.maxidev.tastymeal.data.remote.dto.CategoriesDto
 import com.maxidev.tastymeal.data.remote.dto.FilterDto
-import com.maxidev.tastymeal.data.remote.dto.MealDto
+import com.maxidev.tastymeal.data.remote.dto.MealListDto
 import com.maxidev.tastymeal.data.remote.dto.MealMinimalListDto
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -23,7 +23,7 @@ interface TastyMealApiService {
     ): MealMinimalListDto
 
     @GET(MEAL_BY_ID)
-    suspend fun getMealById(@Query("i") id: Int): MealDto
+    suspend fun getMealById(@Query("i") id: String): MealListDto
 
     @GET(GENERAL_LIST)
     suspend fun getList(
