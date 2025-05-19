@@ -1,6 +1,6 @@
 # Tasty meal (WIP)
 
-- [ ] TODO: Detail screen
+- [X] TODO: Detail screen
 - [ ] TODO: Favorite screen/feature
 - [ ] TODO: Settings screen (Data store)
 - [ ] TODO: Recipe creator
