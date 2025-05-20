@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 @Composable
 fun CustomCenteredTopBar(
     modifier: Modifier = Modifier,
-    title: @Composable () -> Unit,
+    title: @Composable () -> Unit = {},
     // Custom options
     navigationIcon: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},

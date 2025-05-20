@@ -2,11 +2,13 @@ package com.maxidev.tastymeal.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
@@ -22,16 +24,45 @@ fun <T: Any> CustomLazyRow(
     itemsContent: List<T>,
     key: ((item: T) -> Any),
     // Custom options
+    modifier: Modifier = Modifier,
     lazyState: LazyListState = rememberLazyListState(),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     verticalAlignment: Alignment.Vertical = Alignment.Top,
     content: @Composable (T) -> Unit
 ) {
     LazyRow(
+        modifier = modifier,
         state = lazyState,
         contentPadding = contentPadding,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = verticalAlignment
+    ) {
+        items(
+            items = itemsContent,
+            key = key
+        ) { index ->
+            content(index)
+        }
+    }
+}
+
+@Composable
+fun <T: Any> CustomLazyColumn(
+    itemsContent: List<T>,
+    key: ((item: T) -> Any),
+    // Custom options
+    modifier: Modifier = Modifier,
+    lazyState: LazyListState = rememberLazyListState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+    content: @Composable (T) -> Unit
+) {
+    LazyColumn(
+        modifier = modifier,
+        state = lazyState,
+        contentPadding = contentPadding,
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalAlignment = horizontalAlignment
     ) {
         items(
             items = itemsContent,
@@ -58,6 +89,36 @@ fun <T: Any> CustomLazyHorizontalGrid(
     LazyHorizontalGrid(
         modifier = modifier,
         rows = rows,
+        state = lazyState,
+        contentPadding = contentPadding,
+        horizontalArrangement = horizontalArrangement,
+        verticalArrangement = verticalArrangement
+    ) {
+        items(
+            items = itemsContent,
+            key = key
+        ) { index ->
+            content(index)
+        }
+    }
+}
+
+@Composable
+private fun <T: Any> CustomLazyVerticalGrid(
+    itemsContent: List<T>,
+    key: ((item: T) -> Any),
+    columns: GridCells,
+    // Custom options
+    modifier: Modifier = Modifier,
+    lazyState: LazyGridState = rememberLazyGridState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
+    content: @Composable (T) -> Unit
+) {
+    LazyVerticalGrid(
+        modifier = modifier,
+        columns = columns,
         state = lazyState,
         contentPadding = contentPadding,
         horizontalArrangement = horizontalArrangement,
