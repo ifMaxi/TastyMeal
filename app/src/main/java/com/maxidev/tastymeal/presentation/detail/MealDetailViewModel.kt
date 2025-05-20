@@ -5,9 +5,13 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.maxidev.tastymeal.domain.model.Meal
+import com.maxidev.tastymeal.domain.usecase.DeleteBookmarkUseCase
+import com.maxidev.tastymeal.domain.usecase.IsBookmarkedUseCase
 import com.maxidev.tastymeal.domain.usecase.MealDetailUseCase
+import com.maxidev.tastymeal.domain.usecase.SaveBookmarkUseCase
 import com.maxidev.tastymeal.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +24,10 @@ import javax.inject.Inject
 @HiltViewModel
 class MealDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val mealDetailUseCase: MealDetailUseCase
+    private val mealDetailUseCase: MealDetailUseCase,
+    private val isBookmarkedUseCase: IsBookmarkedUseCase,
+    private val saveBookmarkUseCase: SaveBookmarkUseCase,
+    private val deleteBookmarkUseCase: DeleteBookmarkUseCase
 ): ViewModel() {
 
     private val mealId = checkNotNull(savedStateHandle.get<String>("mealId"))
@@ -46,4 +53,16 @@ class MealDetailViewModel @Inject constructor(
             }
         }
     }
+
+    fun isBookmarked(): Flow<Boolean> = isBookmarkedUseCase.invoke(mealId)
+
+    fun saveToBookmark(meal: Meal) =
+        viewModelScope.launch {
+            saveBookmarkUseCase.invoke(meal)
+        }
+
+    fun deleteFromBookmark(meal: Meal) =
+        viewModelScope.launch {
+            deleteBookmarkUseCase.invoke(meal)
+        }
 }

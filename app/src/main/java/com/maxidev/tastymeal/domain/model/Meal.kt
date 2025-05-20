@@ -10,5 +10,6 @@ data class Meal(
     val strYouTube: String,
     val strSource: String,
     val strIngredients: List<String>,
-    val strMeasure: List<String>
+    val strMeasure: List<String>,
+    val bookmarked: Boolean
 )

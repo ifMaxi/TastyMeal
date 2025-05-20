@@ -2,6 +2,7 @@
 
 package com.maxidev.tastymeal.presentation.detail
 
+import android.content.Intent
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,9 +31,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -42,10 +48,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.maxidev.tastymeal.domain.model.Meal
@@ -55,50 +63,115 @@ import com.maxidev.tastymeal.presentation.components.CustomExtendedFab
 import com.maxidev.tastymeal.presentation.components.CustomIconButton
 import com.maxidev.tastymeal.presentation.theme.TastyMealTheme
 import com.maxidev.tastymeal.utils.Resource
-
-// TODO: Favorite functionality.
+import kotlinx.coroutines.launch
 
 @Composable
 fun MealDetailScreen(
-    viewModel: MealDetailViewModel = hiltViewModel()
+    viewModel: MealDetailViewModel = hiltViewModel(),
+    navigateBack: () -> Unit
 ) {
     val state by viewModel.detailState.collectAsStateWithLifecycle()
+    val isBookmark by viewModel.isBookmarked().collectAsStateWithLifecycle(false)
 
-    ScreenContent(meal = state)
+    ScreenContent(
+        isBookmarked = isBookmark,
+        meal = state,
+        onEvent = { event ->
+            when (event) {
+                MealDetailUiEvents.NavigateBack -> { navigateBack() }
+                is MealDetailUiEvents.AddToBookmark -> {
+                    viewModel.saveToBookmark(event.add)
+                }
+                is MealDetailUiEvents.RemoveToBookmark -> {
+                    viewModel.deleteFromBookmark(event.remove)
+                }
+            }
+        }
+    )
 }
 
 @Composable
 private fun ScreenContent(
-    meal: Resource<Meal>
+    isBookmarked: Boolean,
+    meal: Resource<Meal>,
+    onEvent: (MealDetailUiEvents) -> Unit
 ) {
+    val context = LocalContext.current
+    val snackbarState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val sourceUri = meal.data?.strSource?.toUri()
+    val youTubeUri = meal.data?.strYouTube?.toUri()
+    val browserIntent = Intent(Intent.ACTION_VIEW, sourceUri)
+    val youTubeIntent = Intent(Intent.ACTION_VIEW, youTubeUri)
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    val sendChooser = Intent.createChooser(
+        Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, meal.data?.strSource)
+            type = "text/plain"
+        }, "Share recipe."
+    )
+
+    // TODO: Optimize the display and remove a small freeze when navigating to the screen.
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarState) },
         topBar = {
             CustomCenteredTopBar(
-                title = { /* Do nothing. */ },
                 navigationIcon = {
                     Icon(
                         imageVector = Icons.Rounded.ArrowBackIosNew,
                         contentDescription = "Back",
                         modifier = Modifier
-                            .clickable { /* TODO: Navigate back */ }
+                            .clickable { onEvent(MealDetailUiEvents.NavigateBack) }
                     )
                 },
                 actions = {
+                    val tintColor = if (isBookmarked) Color.Red else Color.Unspecified
+
                     CustomIconButton(
                         imageVector = Icons.Rounded.BookmarkBorder,
                         contentDescription = "Bookmark",
-                        onClick = { /* TODO: Bookmark logic. */ }
+                        tint = tintColor,
+                        onClick = {
+                            if (isBookmarked) {
+                                onEvent(
+                                    MealDetailUiEvents.RemoveToBookmark(
+                                        remove = meal.data?.copy(bookmarked = false)
+                                            ?: return@CustomIconButton
+                                    )
+                                )
+                                scope.launch {
+                                    snackbarState.showSnackbar(
+                                        message = "Removed from bookmarks.",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            } else {
+                                onEvent(
+                                    MealDetailUiEvents.AddToBookmark(
+                                        add = meal.data?.copy(bookmarked = true)
+                                            ?: return@CustomIconButton
+                                    )
+                                )
+                                scope.launch {
+                                    snackbarState.showSnackbar(
+                                        message = "Saved to bookmarks.",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            }
+                        }
                     )
                     CustomIconButton(
                         imageVector = Icons.Rounded.Share,
                         contentDescription = "Share",
-                        onClick = { /* TODO: Share intent. */ }
+                        onClick = { context.startActivity(sendChooser) }
                     )
                     // TODO: If source not exist. Hide this button.
                     CustomIconButton(
                         imageVector = Icons.Rounded.Source,
                         contentDescription = "Source",
-                        onClick = { /* TODO: Browser intent. */ }
+                        onClick = { context.startActivity(browserIntent) }
                     )
                 }
             )
@@ -106,7 +179,7 @@ private fun ScreenContent(
         floatingActionButton = {
             // TODO: If not exist youtube link, hide this button or show a message.
             CustomExtendedFab(
-                onClick = { /* TODO: Open on youtube intent. */ },
+                onClick = { context.startActivity(youTubeIntent) },
                 text = { Text(text = "Watch on YouTube") },
                 icon = {
                     Icon(

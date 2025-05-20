@@ -52,5 +52,6 @@ data class MealDto(
     val strMeasure18: String? = "",
     val strMeasure19: String? = "",
     val strMeasure20: String? = "",
-    val strSource: String? = ""
+    val strSource: String? = "",
+    val bookmarked: Boolean? = false
 )

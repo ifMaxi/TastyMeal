@@ -2,8 +2,8 @@ package com.maxidev.tastymeal.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Bookmarks
 import androidx.compose.material.icons.rounded.Create
-import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
@@ -23,6 +23,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.maxidev.tastymeal.presentation.bookmark.BookmarkScreen
 import com.maxidev.tastymeal.presentation.detail.MealDetailScreen
 import com.maxidev.tastymeal.presentation.home.HomeScreen
 import com.maxidev.tastymeal.presentation.search.SearchScreen
@@ -86,9 +87,14 @@ fun NavigationGraph(
                     }
                 )
             }
+            composable<NavDestinations.Bookmarks> {
+                BookmarkScreen()
+            }
 
             composable<NavDestinations.MealDetail> {
-                MealDetailScreen()
+                MealDetailScreen(
+                    navigateBack = { navController.popBackStack() }
+                )
             }
         }
     }
@@ -97,7 +103,7 @@ fun NavigationGraph(
 sealed interface NavDestinations {
     @Serializable data object Home : NavDestinations
     @Serializable data object Search : NavDestinations
-    @Serializable data object Favorites: NavDestinations
+    @Serializable data object Bookmarks: NavDestinations
     @Serializable data object Settings : NavDestinations
     @Serializable data object MyRecipes: NavDestinations
     @Serializable data class MealDetail(val mealId: String) : NavDestinations
@@ -126,9 +132,9 @@ val topLevelRoutes = listOf(
         name = "My recipes"
     ),
     TopLevelRoute(
-        route = NavDestinations.Favorites,
-        icon = Icons.Rounded.Favorite,
-        name = "Favorites"
+        route = NavDestinations.Bookmarks,
+        icon = Icons.Rounded.Bookmarks,
+        name = "Bookmarks"
     ),
     TopLevelRoute(
         route = NavDestinations.Settings,
