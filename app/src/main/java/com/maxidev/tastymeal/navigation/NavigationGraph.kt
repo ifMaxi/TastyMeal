@@ -25,6 +25,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.maxidev.tastymeal.presentation.bookmark.BookmarkScreen
 import com.maxidev.tastymeal.presentation.detail.MealDetailScreen
+import com.maxidev.tastymeal.presentation.detail.MealDetailScreenOffline
 import com.maxidev.tastymeal.presentation.home.HomeScreen
 import com.maxidev.tastymeal.presentation.search.SearchScreen
 import kotlinx.serialization.Serializable
@@ -75,7 +76,7 @@ fun NavigationGraph(
         ) {
             composable<NavDestinations.Home> {
                 HomeScreen(
-                    onClick = { mealId ->
+                    navigateToDetail = { mealId ->
                         navController.navigate(NavDestinations.MealDetail(mealId))
                     }
                 )
@@ -88,11 +89,20 @@ fun NavigationGraph(
                 )
             }
             composable<NavDestinations.Bookmarks> {
-                BookmarkScreen()
+                BookmarkScreen(
+                    navigateToDetailOffline = { mealId ->
+                        navController.navigate(NavDestinations.MealDetailOffline(mealId))
+                    }
+                )
             }
 
             composable<NavDestinations.MealDetail> {
                 MealDetailScreen(
+                    navigateBack = { navController.popBackStack() }
+                )
+            }
+            composable<NavDestinations.MealDetailOffline> {
+                MealDetailScreenOffline(
                     navigateBack = { navController.popBackStack() }
                 )
             }
@@ -107,6 +117,7 @@ sealed interface NavDestinations {
     @Serializable data object Settings : NavDestinations
     @Serializable data object MyRecipes: NavDestinations
     @Serializable data class MealDetail(val mealId: String) : NavDestinations
+    @Serializable data class MealDetailOffline(val mealId: String): NavDestinations
 }
 
 data class TopLevelRoute<T: Any>(

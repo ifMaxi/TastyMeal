@@ -208,6 +208,143 @@ private fun ScreenContent(
     }
 }
 
+/* ----- Offline ----- */
+
+@Composable
+fun MealDetailScreenOffline(
+    viewModel: MealDetailOfflineViewModel = hiltViewModel(),
+    navigateBack: () -> Unit
+) {
+    val state by viewModel.mealById.collectAsStateWithLifecycle()
+    val isBookmark by viewModel.isBookmarked().collectAsStateWithLifecycle(false)
+
+    ScreenContentOffline(
+        isBookmarked = isBookmark,
+        meal = state,
+        onEvent = { event ->
+            when (event) {
+                MealDetailUiEvents.NavigateBack -> { navigateBack() }
+                is MealDetailUiEvents.AddToBookmark -> {
+                    viewModel.saveToBookmark(event.add)
+                }
+                is MealDetailUiEvents.RemoveToBookmark -> {
+                    viewModel.deleteFromBookmark(event.remove)
+                }
+            }
+        }
+    )
+}
+
+@Composable
+private fun ScreenContentOffline(
+    isBookmarked: Boolean,
+    meal: Meal,
+    onEvent: (MealDetailUiEvents) -> Unit
+) {
+    val context = LocalContext.current
+    val snackbarState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val sourceUri = meal.strSource.toUri()
+    val youTubeUri = meal.strYouTube.toUri()
+    val browserIntent = Intent(Intent.ACTION_VIEW, sourceUri)
+    val youTubeIntent = Intent(Intent.ACTION_VIEW, youTubeUri)
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    val sendChooser = Intent.createChooser(
+        Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, meal.strSource)
+            type = "text/plain"
+        }, "Share recipe."
+    )
+
+    // TODO: Optimize the display and remove a small freeze when navigating to the screen.
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarState) },
+        topBar = {
+            CustomCenteredTopBar(
+                navigationIcon = {
+                    Icon(
+                        imageVector = Icons.Rounded.ArrowBackIosNew,
+                        contentDescription = "Back",
+                        modifier = Modifier
+                            .clickable { onEvent(MealDetailUiEvents.NavigateBack) }
+                    )
+                },
+                actions = {
+                    val tintColor = if (isBookmarked) Color.Red else Color.Unspecified
+
+                    CustomIconButton(
+                        imageVector = Icons.Rounded.BookmarkBorder,
+                        contentDescription = "Bookmark",
+                        tint = tintColor,
+                        onClick = {
+                            if (isBookmarked) {
+                                onEvent(
+                                    MealDetailUiEvents.RemoveToBookmark(
+                                        remove = meal.copy(bookmarked = false)
+                                    )
+                                )
+                                scope.launch {
+                                    snackbarState.showSnackbar(
+                                        message = "Removed from bookmarks.",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            } else {
+                                onEvent(
+                                    MealDetailUiEvents.AddToBookmark(
+                                        add = meal.copy(bookmarked = true)
+                                    )
+                                )
+                                scope.launch {
+                                    snackbarState.showSnackbar(
+                                        message = "Saved to bookmarks.",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            }
+                        }
+                    )
+                    CustomIconButton(
+                        imageVector = Icons.Rounded.Share,
+                        contentDescription = "Share",
+                        onClick = { context.startActivity(sendChooser) }
+                    )
+                    // TODO: If source not exist. Hide this button.
+                    CustomIconButton(
+                        imageVector = Icons.Rounded.Source,
+                        contentDescription = "Source",
+                        onClick = { context.startActivity(browserIntent) }
+                    )
+                }
+            )
+        },
+        floatingActionButton = {
+            // TODO: If not exist youtube link, hide this button or show a message.
+            CustomExtendedFab(
+                onClick = { context.startActivity(youTubeIntent) },
+                text = { Text(text = "Watch on YouTube") },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Rounded.PlayCircle,
+                        contentDescription = "Watch on YouTube"
+                    )
+                },
+                shape = RoundedCornerShape(10.dp),
+                elevation = FloatingActionButtonDefaults.elevation(6.dp)
+            )
+        },
+        floatingActionButtonPosition = FabPosition.Center
+    ) { innerPadding ->
+        MealDetailContent(
+            meal = meal,
+            modifier = Modifier.padding(innerPadding)
+        )
+    }
+}
+
+/* ----- Content ----- */
+
 @Composable
 private fun MealDetailContent(
     modifier: Modifier = Modifier,

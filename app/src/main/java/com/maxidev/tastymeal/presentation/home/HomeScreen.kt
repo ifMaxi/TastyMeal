@@ -57,7 +57,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
-    onClick: (String) -> Unit
+    navigateToDetail: (String) -> Unit
 ) {
     //homeState.collectAsStateWithLifecycle()
     val randomState by viewModel.randomFlow.collectAsStateWithLifecycle()
@@ -73,7 +73,7 @@ fun HomeScreen(
         searchByLetter = searchByLetter,
         //filterByCountry = filterCountryState.filterByCountry,
         scrollBehavior = scrollBehavior,
-        onClick = onClick
+        navigateToDetail = navigateToDetail
     )
 }
 
@@ -85,7 +85,7 @@ private fun HomeScreenContent(
     categories: List<CategoriesMeal>,
     searchByLetter: HomeUiState,
     scrollBehavior: TopAppBarScrollBehavior,
-    onClick: (String) -> Unit
+    navigateToDetail: (String) -> Unit
 ) {
     val pagingItems = searchByLetter.searchByLetter.collectAsLazyPagingItems()
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { pagingItems.itemCount })
@@ -186,7 +186,7 @@ private fun HomeScreenContent(
                             is Resource.Success<*> -> {
                                 CardMealItem(
                                     content = homeState.data ?: return@item,
-                                    onClick = { onClick(homeState.data.idMeal) }
+                                    onClick = { navigateToDetail(homeState.data.idMeal) }
                                 )
                             }
                         }

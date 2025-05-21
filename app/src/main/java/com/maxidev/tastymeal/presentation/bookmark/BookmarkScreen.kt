@@ -41,20 +41,23 @@ import com.maxidev.tastymeal.presentation.theme.TastyMealTheme
 
 @Composable
 fun BookmarkScreen(
-    viewModel: BookmarkViewModel = hiltViewModel()
+    viewModel: BookmarkViewModel = hiltViewModel(),
+    navigateToDetailOffline: (String) -> Unit
 ) {
     val state by viewModel.getBookmarks.collectAsStateWithLifecycle()
 
     BookmarkContent(
         allBookmarks = state.allBookmarks,
-        onClearAll = { viewModel.clearAllBookmarks() }
+        onClearAll = { viewModel.clearAllBookmarks() },
+        navigateToDetailOffline = navigateToDetailOffline
     )
 }
 
 @Composable
 private fun BookmarkContent(
     allBookmarks: List<Meal>,
-    onClearAll: () -> Unit
+    onClearAll: () -> Unit,
+    navigateToDetailOffline: (String) -> Unit
 ) {
     val topBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topBarState)
@@ -88,7 +91,8 @@ private fun BookmarkContent(
                     BookmarkedItem(
                         strMealThumb = it.strMealThumb,
                         strMeal = it.strMeal,
-                        strCategory = it.strCategory
+                        strCategory = it.strCategory,
+                        onClick = { navigateToDetailOffline(it.idMeal) }
                     )
                 }
             )
@@ -101,9 +105,11 @@ private fun BookmarkContent(
 fun BookmarkedItem(
     strMealThumb: String,
     strMeal: String,
-    strCategory: String
+    strCategory: String,
+    onClick: () -> Unit
 ) {
     Card(
+        onClick = onClick,
         elevation = CardDefaults.cardElevation(6.dp),
         shape = RoundedCornerShape(10.dp)
     ) {
@@ -146,6 +152,9 @@ fun BookmarkedItem(
 @Composable
 private fun BookmarkedItemPreview() {
     TastyMealTheme {
-        BookmarkedItem(strMealThumb = "image", strMeal = "Salad with chicken", strCategory = "Beef")
+        BookmarkedItem(
+            strMealThumb = "image", strMeal = "Salad with chicken", strCategory = "Beef",
+            onClick = {}
+        )
     }
 }
