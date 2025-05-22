@@ -28,6 +28,7 @@ import com.maxidev.tastymeal.presentation.detail.MealDetailScreen
 import com.maxidev.tastymeal.presentation.detail.MealDetailScreenOffline
 import com.maxidev.tastymeal.presentation.home.HomeScreen
 import com.maxidev.tastymeal.presentation.search.SearchScreen
+import com.maxidev.tastymeal.presentation.settings.SettingsScreen
 import kotlinx.serialization.Serializable
 
 @Composable
@@ -94,6 +95,9 @@ fun NavigationGraph(
                         navController.navigate(NavDestinations.MealDetailOffline(mealId))
                     }
                 )
+            }
+            composable<NavDestinations.Settings> {
+                SettingsScreen()
             }
 
             composable<NavDestinations.MealDetail> {
