@@ -27,6 +27,8 @@ import com.maxidev.tastymeal.presentation.bookmark.BookmarkScreen
 import com.maxidev.tastymeal.presentation.detail.MealDetailScreen
 import com.maxidev.tastymeal.presentation.detail.MealDetailScreenOffline
 import com.maxidev.tastymeal.presentation.home.HomeScreen
+import com.maxidev.tastymeal.presentation.recipe.MyRecipesScreen
+import com.maxidev.tastymeal.presentation.recipe.new_recipe.NewRecipeScreen
 import com.maxidev.tastymeal.presentation.search.SearchScreen
 import com.maxidev.tastymeal.presentation.settings.SettingsScreen
 import kotlinx.serialization.Serializable
@@ -99,6 +101,20 @@ fun NavigationGraph(
             composable<NavDestinations.Settings> {
                 SettingsScreen()
             }
+            composable<NavDestinations.MyRecipes> {
+                MyRecipesScreen(
+                    navigateToCreate = {
+                        navController.navigate(NavDestinations.NewRecipe)
+                    }
+                )
+            }
+            composable<NavDestinations.NewRecipe> {
+                NewRecipeScreen(
+                    popBackStack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
 
             composable<NavDestinations.MealDetail> {
                 MealDetailScreen(
@@ -120,6 +136,7 @@ sealed interface NavDestinations {
     @Serializable data object Bookmarks: NavDestinations
     @Serializable data object Settings : NavDestinations
     @Serializable data object MyRecipes: NavDestinations
+    @Serializable data object NewRecipe: NavDestinations
     @Serializable data class MealDetail(val mealId: String) : NavDestinations
     @Serializable data class MealDetailOffline(val mealId: String): NavDestinations
 }

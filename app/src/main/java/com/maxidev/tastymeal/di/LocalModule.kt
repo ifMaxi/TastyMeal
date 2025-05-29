@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.maxidev.tastymeal.data.local.TastyMealDataBase
 import com.maxidev.tastymeal.data.local.dao.BookmarkDao
+import com.maxidev.tastymeal.data.local.dao.RecipeDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,7 +36,12 @@ object LocalModule {
     @Provides
     @Singleton
     fun providesBookmarkDao(dataBase: TastyMealDataBase): BookmarkDao {
-
         return dataBase.bookmarkDao()
+    }
+
+    @Provides
+    @Singleton
+    fun providesRecipeDao(dataBase: TastyMealDataBase): RecipeDao {
+        return dataBase.recipeDao()
     }
 }

@@ -7,10 +7,12 @@ import com.maxidev.tastymeal.data.local.dao.BookmarkDao
 import com.maxidev.tastymeal.data.local.dao.CategoriesDao
 import com.maxidev.tastymeal.data.local.dao.FiltersDao
 import com.maxidev.tastymeal.data.local.dao.MinimalMealDao
+import com.maxidev.tastymeal.data.local.dao.RecipeDao
 import com.maxidev.tastymeal.data.local.entity.CategoriesEntity
 import com.maxidev.tastymeal.data.local.entity.FiltersEntity
 import com.maxidev.tastymeal.data.local.entity.MealEntity
 import com.maxidev.tastymeal.data.local.entity.MinimalMealEntity
+import com.maxidev.tastymeal.data.local.entity.RecipeEntity
 import com.maxidev.tastymeal.utils.ConvertersUtils
 
 @Database(
@@ -18,7 +20,8 @@ import com.maxidev.tastymeal.utils.ConvertersUtils
         MinimalMealEntity::class,
         CategoriesEntity::class,
         FiltersEntity::class,
-        MealEntity::class
+        MealEntity::class,
+        RecipeEntity::class
                ],
     version = 1,
     exportSchema = false
@@ -30,4 +33,5 @@ abstract class TastyMealDataBase: RoomDatabase() {
     abstract fun categoriesDao(): CategoriesDao
     abstract fun filtersDao(): FiltersDao
     abstract fun bookmarkDao(): BookmarkDao
+    abstract fun recipeDao(): RecipeDao
 }

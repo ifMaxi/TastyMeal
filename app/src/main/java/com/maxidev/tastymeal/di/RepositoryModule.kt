@@ -3,10 +3,12 @@ package com.maxidev.tastymeal.di
 import com.maxidev.tastymeal.data.repository.BookmarkRepositoryImpl
 import com.maxidev.tastymeal.data.repository.HomeRepositoryImpl
 import com.maxidev.tastymeal.data.repository.MealDetailRepositoryImpl
+import com.maxidev.tastymeal.data.repository.RecipeRepositoryImpl
 import com.maxidev.tastymeal.data.repository.SearchMealRepositoryImpl
 import com.maxidev.tastymeal.domain.repository.BookmarkRepository
 import com.maxidev.tastymeal.domain.repository.HomeRepository
 import com.maxidev.tastymeal.domain.repository.MealDetailRepository
+import com.maxidev.tastymeal.domain.repository.RecipeRepository
 import com.maxidev.tastymeal.domain.repository.SearchMealRepository
 import dagger.Binds
 import dagger.Module
@@ -28,4 +30,7 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindBookmarkRepository(impl: BookmarkRepositoryImpl): BookmarkRepository
+
+    @Binds
+    abstract fun bindRecipeRepository(impl: RecipeRepositoryImpl): RecipeRepository
 }
