@@ -13,9 +13,15 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 
@@ -23,6 +29,7 @@ import androidx.paging.compose.LazyPagingItems
 fun <T: Any> CustomLazyRow(
     itemsContent: List<T>,
     key: ((item: T) -> Any),
+
     // Custom options
     modifier: Modifier = Modifier,
     lazyState: LazyListState = rememberLazyListState(),
@@ -50,6 +57,7 @@ fun <T: Any> CustomLazyRow(
 fun <T: Any> CustomLazyColumn(
     itemsContent: List<T>,
     key: ((item: T) -> Any),
+
     // Custom options
     modifier: Modifier = Modifier,
     lazyState: LazyListState = rememberLazyListState(),
@@ -78,6 +86,7 @@ fun <T: Any> CustomLazyHorizontalGrid(
     itemsContent: List<T>,
     key: ((item: T) -> Any),
     rows: GridCells,
+
     // Custom options
     modifier: Modifier = Modifier,
     lazyState: LazyGridState = rememberLazyGridState(),
@@ -104,10 +113,11 @@ fun <T: Any> CustomLazyHorizontalGrid(
 }
 
 @Composable
-private fun <T: Any> CustomLazyVerticalGrid(
+fun <T: Any> CustomLazyVerticalGrid(
     itemsContent: List<T>,
     key: ((item: T) -> Any),
     columns: GridCells,
+
     // Custom options
     modifier: Modifier = Modifier,
     lazyState: LazyGridState = rememberLazyGridState(),
@@ -133,6 +143,37 @@ private fun <T: Any> CustomLazyVerticalGrid(
     }
 }
 
+@Composable
+fun <T: Any> CustomLazyVerticalStaggeredGrid(
+    itemsContent: List<T>,
+    key: ((item: T) -> Any),
+    columns: StaggeredGridCells,
+
+    // Custom options
+    modifier: Modifier = Modifier,
+    lazyState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    verticalItemSpacing: Dp = 0.dp,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.spacedBy(0.dp),
+    content: @Composable (T) -> Unit
+) {
+    LazyVerticalStaggeredGrid(
+        modifier = modifier,
+        columns = columns,
+        state = lazyState,
+        contentPadding = contentPadding,
+        verticalItemSpacing = verticalItemSpacing,
+        horizontalArrangement = horizontalArrangement
+    ) {
+        items(
+            items = itemsContent,
+            key = key
+        ) { index ->
+            content(index)
+        }
+    }
+}
+
 /**
  * Customizable lazy list for paging.
  */
@@ -141,6 +182,7 @@ fun <T: Any> CustomLazyHorizontalGridPaging(
     itemsContent: LazyPagingItems<T>,
     key: ((item: T) -> Any),
     rows: GridCells,
+
     // Custom options
     modifier: Modifier = Modifier,
     lazyState: LazyGridState = rememberLazyGridState(),
