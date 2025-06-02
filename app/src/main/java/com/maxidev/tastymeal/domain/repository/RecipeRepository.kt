@@ -7,7 +7,7 @@ interface RecipeRepository {
 
     fun fetchAllRecipes(): Flow<List<Recipe>>
 
-    fun fetchRecipeById(id: Long): Flow<Recipe>
+    fun fetchRecipeById(id: Long): Flow<Recipe?>
 
     suspend fun upsertRecipe(recipe: Recipe)
 

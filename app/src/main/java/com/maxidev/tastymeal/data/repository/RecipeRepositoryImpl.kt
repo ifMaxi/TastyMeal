@@ -22,9 +22,10 @@ class RecipeRepositoryImpl @Inject constructor(
             .map { it.map(RecipeEntity::asDomain) }
             .flowOn(Dispatchers.IO)
 
-    override fun fetchRecipeById(id: Long): Flow<Recipe> =
+    override fun fetchRecipeById(id: Long): Flow<Recipe?> =
         dao.getRecipeById(id)
-            .map(RecipeEntity::asDomain)
+            .map { it?.asDomain() }
+            //.map(RecipeEntity::asDomain)
             .flowOn(Dispatchers.IO)
 
     override suspend fun upsertRecipe(recipe: Recipe) =

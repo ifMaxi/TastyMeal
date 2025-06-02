@@ -8,6 +8,5 @@ data class Recipe(
     val image: Uri,
     val cameraImage: Uri,
     val instructions: String,
-    val ingredients: List<String>,
-    val measures: List<String>
+    val ingredientsAndMeasures: String
 )
