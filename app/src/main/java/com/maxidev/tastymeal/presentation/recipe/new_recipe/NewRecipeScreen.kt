@@ -58,7 +58,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.Dp
@@ -170,9 +169,8 @@ private fun ScreenContent(
                                 title = titleField.text.toString(),
                                 image = singlePhotoPickerImage ?: Uri.EMPTY,
                                 cameraImage = capturedImage,
-                                ingredients = listOf(),
-                                measures = listOf(),
-                                instructions = ""
+                                instructions = instructionsField.text.toString(),
+                                ingredientsAndMeasures = ingredientsField.text.toString()
                             )
                         )
                     )
@@ -321,9 +319,10 @@ private fun ScreenContent(
                         Image(
                             painter = rememberAsyncImagePainter(photo),
                             contentDescription = null,
-                            contentScale = ContentScale.Crop,
+                            //contentScale = ContentScale.FillWidth,
                             modifier = Modifier
-                                .fillMaxWidth()
+                                .align(Alignment.CenterHorizontally)
+                                //.fillMaxSize()
                                 .padding(10.dp)
                                 .clip(RoundedCornerShape(10.dp))
                         )
@@ -349,6 +348,7 @@ private fun ScreenContent(
                             if (ingredientsField.text.isEmpty()) {
                                 Text(text = "Add ingredients here...")
                             }
+                            innerTextField()
                         }
                     )
                 }

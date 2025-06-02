@@ -11,8 +11,7 @@ fun RecipeEntity.asDomain() =
         image = image ?: Uri.EMPTY,
         cameraImage = cameraImage ?: Uri.EMPTY,
         instructions = instructions,
-        ingredients = ingredients,
-        measures = measures
+        ingredientsAndMeasures = ingredientsAndMeasures
     )
 
 fun Recipe.asEntity() =
@@ -22,6 +21,5 @@ fun Recipe.asEntity() =
         image = image,
         cameraImage = cameraImage,
         instructions = instructions,
-        ingredients = ingredients,
-        measures = measures
+        ingredientsAndMeasures = ingredientsAndMeasures
     )

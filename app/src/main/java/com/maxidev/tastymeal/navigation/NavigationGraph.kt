@@ -28,6 +28,7 @@ import com.maxidev.tastymeal.presentation.detail.MealDetailScreen
 import com.maxidev.tastymeal.presentation.detail.MealDetailScreenOffline
 import com.maxidev.tastymeal.presentation.home.HomeScreen
 import com.maxidev.tastymeal.presentation.recipe.MyRecipesScreen
+import com.maxidev.tastymeal.presentation.recipe.detail.RecipeDetailScreen
 import com.maxidev.tastymeal.presentation.recipe.new_recipe.NewRecipeScreen
 import com.maxidev.tastymeal.presentation.search.SearchScreen
 import com.maxidev.tastymeal.presentation.settings.SettingsScreen
@@ -103,16 +104,15 @@ fun NavigationGraph(
             }
             composable<NavDestinations.MyRecipes> {
                 MyRecipesScreen(
-                    navigateToCreate = {
-                        navController.navigate(NavDestinations.NewRecipe)
+                    navigateToCreate = { navController.navigate(NavDestinations.NewRecipe) },
+                    navigateToDetail = { id ->
+                        navController.navigate(NavDestinations.RecipeDetail(id))
                     }
                 )
             }
             composable<NavDestinations.NewRecipe> {
                 NewRecipeScreen(
-                    popBackStack = {
-                        navController.popBackStack()
-                    }
+                    popBackStack = { navController.popBackStack() }
                 )
             }
 
@@ -123,6 +123,11 @@ fun NavigationGraph(
             }
             composable<NavDestinations.MealDetailOffline> {
                 MealDetailScreenOffline(
+                    navigateBack = { navController.popBackStack() }
+                )
+            }
+            composable<NavDestinations.RecipeDetail> {
+                RecipeDetailScreen(
                     navigateBack = { navController.popBackStack() }
                 )
             }
@@ -139,6 +144,7 @@ sealed interface NavDestinations {
     @Serializable data object NewRecipe: NavDestinations
     @Serializable data class MealDetail(val mealId: String) : NavDestinations
     @Serializable data class MealDetailOffline(val mealId: String): NavDestinations
+    @Serializable data class RecipeDetail(val recipeId: Long): NavDestinations
 }
 
 data class TopLevelRoute<T: Any>(

@@ -12,6 +12,5 @@ data class RecipeEntity(
     @ColumnInfo val image: Uri?,
     @ColumnInfo val cameraImage: Uri?,
     @ColumnInfo val instructions: String,
-    @ColumnInfo val ingredients: List<String>,
-    @ColumnInfo val measures: List<String>
+    @ColumnInfo val ingredientsAndMeasures: String
 )
