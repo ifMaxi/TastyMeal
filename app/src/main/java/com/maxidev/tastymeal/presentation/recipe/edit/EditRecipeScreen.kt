@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.maxidev.tastymeal.presentation.recipe.new_recipe
+package com.maxidev.tastymeal.presentation.recipe.edit
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -47,6 +47,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -69,32 +70,32 @@ import com.maxidev.tastymeal.BuildConfig
 import com.maxidev.tastymeal.domain.model.Recipe
 import com.maxidev.tastymeal.presentation.components.CustomCenteredTopBar
 import com.maxidev.tastymeal.presentation.components.CustomFab
+import com.maxidev.tastymeal.presentation.recipe.new_recipe.NewRecipeUiEvents
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Objects
 
-// TODO: Fix add.
-
 @Composable
-fun NewRecipeScreen(
-    viewModel: NewRecipeViewModel = hiltViewModel(),
+fun EditRecipeScreen(
+    id: Long,
+    viewModel: EditRecipeDetailViewModel = hiltViewModel(),
     popBackStack: () -> Unit
 ) {
-
-    val titleField = viewModel.titleTextState
-    val instructionsField = viewModel.instructionsTextState
-    val ingredientsField = viewModel.ingredientsAndMeasuresState
+    LaunchedEffect(Long) {
+        viewModel.getId(id)
+    }
 
     RecipeScreenContent(
-        titleField = titleField,
-        instructionsField = instructionsField,
-        ingredientsField = ingredientsField,
+        id = id,
+        titleField = viewModel.titleTextState,
+        instructionsField = viewModel.instructionsTextState,
+        ingredientsField = viewModel.ingredientsAndMeasuresState,
         popBackStack = popBackStack,
         onEvent = { events ->
-            when(events) {
+            when (events) {
                 is NewRecipeUiEvents.AddToDataBase -> {
-                    viewModel.saveRecipe(events.add)
+                    viewModel.editRecipe(events.add)
                 }
             }
         }
@@ -103,6 +104,7 @@ fun NewRecipeScreen(
 
 @Composable
 private fun RecipeScreenContent(
+    id: Long,
     titleField: TextFieldState = rememberTextFieldState(),
     instructionsField: TextFieldState = rememberTextFieldState(),
     ingredientsField: TextFieldState = rememberTextFieldState(),
@@ -130,14 +132,13 @@ private fun RecipeScreenContent(
 
                 resolver.takePersistableUriPermission(uri!!, flags)
             }
-        ) // TODO: Fix app crash when closing picker.
+        )
 
     // Camera
-    val cameraLauncher =
-        rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.TakePicture(),
-            onResult = { capturedImage = uri }
-        )
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture(),
+        onResult = { capturedImage = uri }
+    )
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { cameraLauncher.launch(uri) }
@@ -147,18 +148,17 @@ private fun RecipeScreenContent(
         topBar = {
             CustomCenteredTopBar(
                 title = {
-                    Text(text = "New recipe")
+                    Text(text = "Edit recipe")
                 }
             )
         },
         floatingActionButton = {
             CustomFab(
                 onClick = {
-                    // TODO: Change save method whit events.
                     onEvent(
                         NewRecipeUiEvents.AddToDataBase(
                             add = Recipe(
-                                id = 0,
+                                id = id,
                                 title = titleField.text.toString(),
                                 image = singlePhotoPickerImage ?: Uri.EMPTY,
                                 cameraImage = capturedImage,
@@ -301,6 +301,7 @@ private fun RecipeScreenContent(
                             )
                         }
 
+                        // Photo
                         val photo = if (singlePhotoPickerImage == Uri.EMPTY) {
                             capturedImage
                         } else {

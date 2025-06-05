@@ -23,12 +23,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.maxidev.tastymeal.presentation.bookmark.BookmarkScreen
 import com.maxidev.tastymeal.presentation.detail.MealDetailScreen
 import com.maxidev.tastymeal.presentation.detail.MealDetailScreenOffline
 import com.maxidev.tastymeal.presentation.home.HomeScreen
 import com.maxidev.tastymeal.presentation.recipe.MyRecipesScreen
 import com.maxidev.tastymeal.presentation.recipe.detail.RecipeDetailScreen
+import com.maxidev.tastymeal.presentation.recipe.edit.EditRecipeScreen
 import com.maxidev.tastymeal.presentation.recipe.new_recipe.NewRecipeScreen
 import com.maxidev.tastymeal.presentation.search.SearchScreen
 import com.maxidev.tastymeal.presentation.settings.SettingsScreen
@@ -128,7 +130,18 @@ fun NavigationGraph(
             }
             composable<NavDestinations.RecipeDetail> {
                 RecipeDetailScreen(
-                    navigateBack = { navController.popBackStack() }
+                    navigateBack = { navController.popBackStack() },
+                    navigateToEdit = { id ->
+                        navController.navigate(NavDestinations.EditRecipeDetail(id))
+                    }
+                )
+            }
+            composable<NavDestinations.EditRecipeDetail> { backStackEntry ->
+                val args = backStackEntry.toRoute<NavDestinations.EditRecipeDetail>()
+
+                EditRecipeScreen(
+                    id = args.recipeId,
+                    popBackStack = { navController.popBackStack() }
                 )
             }
         }
@@ -145,6 +158,7 @@ sealed interface NavDestinations {
     @Serializable data class MealDetail(val mealId: String) : NavDestinations
     @Serializable data class MealDetailOffline(val mealId: String): NavDestinations
     @Serializable data class RecipeDetail(val recipeId: Long): NavDestinations
+    @Serializable data class EditRecipeDetail(val recipeId: Long): NavDestinations
 }
 
 data class TopLevelRoute<T: Any>(

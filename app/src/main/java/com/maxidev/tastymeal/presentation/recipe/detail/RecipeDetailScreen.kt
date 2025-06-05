@@ -49,19 +49,21 @@ import com.maxidev.tastymeal.presentation.theme.TastyMealTheme
 @Composable
 fun RecipeDetailScreen(
     viewModel: RecipeDetailViewModel = hiltViewModel(),
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
+    navigateToEdit: (Long) -> Unit
 ) {
     val state by viewModel.recipeById.collectAsStateWithLifecycle()
 
     ScreenContent(
         recipe = state ?: return,
+        navigateToEdit = navigateToEdit,
         onEvent = { events ->
             when (events) {
                 is RecipeDetailUiEvents.DeleteRecipe -> {
                     viewModel.deleteRecipe(events.remove)
                     navigateBack()
                 }
-                is RecipeDetailUiEvents.EditRecipe -> { /* TODO: Navigate to edit. */ }
+//                is RecipeDetailUiEvents.EditRecipe -> { navigateToEdit(events.edit) }
                 RecipeDetailUiEvents.NavigateBack -> { navigateBack() }
             }
         }
@@ -71,6 +73,7 @@ fun RecipeDetailScreen(
 @Composable
 private fun ScreenContent(
     recipe: Recipe,
+    navigateToEdit: (Long) -> Unit,
     onEvent: (RecipeDetailUiEvents) -> Unit
 ) {
     val verticalScroll = rememberScrollState()
@@ -94,7 +97,8 @@ private fun ScreenContent(
                         imageVector = Icons.Rounded.Edit,
                         contentDescription = "Edit recipe.",
                         onClick = {
-                            onEvent(RecipeDetailUiEvents.EditRecipe(recipe))
+                            navigateToEdit(recipe.id)
+                            //onEvent(RecipeDetailUiEvents.EditRecipe(recipe.id))
                         }
                     )
                     // TODO: Add alert dialog.
