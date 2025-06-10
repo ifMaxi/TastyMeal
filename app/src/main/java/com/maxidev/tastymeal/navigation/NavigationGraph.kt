@@ -1,5 +1,6 @@
 package com.maxidev.tastymeal.navigation
 
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bookmarks
@@ -76,7 +77,9 @@ fun NavigationGraph(
         }
     ) { innerPadding ->
         NavHost(
-            modifier = Modifier.padding(innerPadding),
+            modifier = Modifier
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding),
             navController = navController,
             startDestination = startDestination
         ) {

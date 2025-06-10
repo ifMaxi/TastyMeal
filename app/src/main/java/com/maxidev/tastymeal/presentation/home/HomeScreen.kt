@@ -2,41 +2,45 @@
 
 package com.maxidev.tastymeal.presentation.home
 
-import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsDraggedAsState
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,34 +50,29 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.maxidev.tastymeal.domain.model.CategoriesMeal
 import com.maxidev.tastymeal.domain.model.MinimalMeal
 import com.maxidev.tastymeal.presentation.components.CustomAsyncImage
-import com.maxidev.tastymeal.presentation.components.CustomCenteredTopBar
-import com.maxidev.tastymeal.presentation.components.CustomHorizontalPagerForPaging
 import com.maxidev.tastymeal.presentation.components.CustomLazyRow
-import com.maxidev.tastymeal.presentation.search.CardMealItem
-import com.maxidev.tastymeal.presentation.theme.TastyMealTheme
+import com.maxidev.tastymeal.presentation.components.CustomLazyRowPaging
 import com.maxidev.tastymeal.utils.Resource
-import kotlinx.coroutines.delay
+
+// TODO: Shimmer loading effect in images.
 
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     navigateToDetail: (String) -> Unit
 ) {
-    //homeState.collectAsStateWithLifecycle()
     val randomState by viewModel.randomFlow.collectAsStateWithLifecycle()
     val categoriesState by viewModel.categoriesFlow.collectAsStateWithLifecycle()
     val searchByLetter by viewModel.searchByLetterState.collectAsStateWithLifecycle()
-    //val filterCountryState by viewModel.filterByCountryFlow.collectAsStateWithLifecycle()
-    val topBarState = rememberTopAppBarState()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topBarState)
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
 
     HomeScreenContent(
+        isRefreshing = isRefreshing,
         homeState = randomState,
         categories = categoriesState.categories,
         searchByLetter = searchByLetter,
-        //filterByCountry = filterCountryState.filterByCountry,
-        scrollBehavior = scrollBehavior,
-        navigateToDetail = navigateToDetail
+        navigateToDetail = navigateToDetail,
+        pullToRefresh = viewModel::refreshAll
     )
 }
 
@@ -81,89 +80,68 @@ fun HomeScreen(
 
 @Composable
 private fun HomeScreenContent(
+    isRefreshing: Boolean,
     homeState: Resource<MinimalMeal>,
     categories: List<CategoriesMeal>,
     searchByLetter: HomeUiState,
-    scrollBehavior: TopAppBarScrollBehavior,
-    navigateToDetail: (String) -> Unit
+    navigateToDetail: (String) -> Unit,
+    pullToRefresh: () -> Unit
 ) {
     val pagingItems = searchByLetter.searchByLetter.collectAsLazyPagingItems()
-    val pagerState = rememberPagerState(initialPage = 0, pageCount = { pagingItems.itemCount })
-    val pageInteractionSource = remember { MutableInteractionSource() }
-    val pagerIsDragged by pagerState.interactionSource.collectIsDraggedAsState()
-    val pageIsPressed by pageInteractionSource.collectIsPressedAsState()
-    val autoAdvance = !pagerIsDragged && !pageIsPressed
 
-    if (autoAdvance) {
-        LaunchedEffect(pagerState, pageInteractionSource) {
-            while (true) {
-                delay(2000)
+    Scaffold { innerPadding ->
+        val lazyState = rememberLazyListState()
+        val pullToRefreshState = rememberPullToRefreshState()
 
-                // TODO: FIX Arithmetic exception
-                val nextPage = (pagerState.currentPage + 1) % pagingItems.itemCount
-                pagerState.animateScrollToPage(nextPage)
-            }
-        }
-    }
-
-    Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            CustomCenteredTopBar(
-                title = {
-                    Text(text = "Tasty Meal")
-                },
-                navigationIcon = { /* TODO: Navigation drawer ? */ },
-                actions = { /* TODO: Actions ? */ },
-                scrollBehavior = scrollBehavior
-            )
-        }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier.padding(innerPadding),
-            contentAlignment = Alignment.Center
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = pullToRefresh,
+            state = pullToRefreshState
         ) {
-            //val pagingItems = searchByLetter.searchByLetter.collectAsLazyPagingItems()
-
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                state = rememberLazyListState(), // Make it reusable
-                //contentPadding = PaddingValues(10.dp),
-                verticalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .consumeWindowInsets(innerPadding),
+                contentPadding = innerPadding,
+                state = lazyState,
+                verticalArrangement = Arrangement.spacedBy(30.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Recommended
+                val spacing = 16.dp
+
+                item { HeaderItem() }
+
+                // Categories
                 item {
-                    CustomHorizontalPagerForPaging(
-                        modifier = Modifier
-                            .clickable(
-                                interactionSource = pageInteractionSource,
-                                indication = LocalIndication.current
-                            ) {
-                                // TODO: Navigate to detail.
-                            },
-                        pagerContent = pagingItems,
-                        pagerState = pagerState,
-                        key = { it.idMeal },
-                        contentPadding = PaddingValues(10.dp),
-                        pageSpacing = 4.dp,
+                    CustomLazyRow(
+                        itemsContent = categories,
+                        key = { keys -> keys.idMeal },
+                        contentPadding = PaddingValues(horizontal = spacing),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(spacing),
                         content = {
-                            RecommendationsItem(model = it)
+                            CategoryItem(
+                                model = it,
+                                onClick = { /* TODO: Navigate to recipe list. */ }
+                            )
                         }
                     )
                 }
 
-                // Categories
+                // Recommended
                 item {
-                    Column {
-                        TitleHeader(title = "Categories")
-                        CustomLazyRow(
-                            itemsContent = categories,
-                            key = { keys -> keys.idMeal },
+                    Column(verticalArrangement = Arrangement.spacedBy(spacing)) {
+                        TitleHeader(title = "Recommendations")
+                        CustomLazyRowPaging(
+                            modifier = Modifier.fillMaxWidth(),
+                            itemsContent = pagingItems,
+                            key = { it.idMeal },
                             verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
                             content = {
-                                CategoryItem(
-                                    model = it
+                                RecommendationsItem(
+                                    model = it,
+                                    onClick = navigateToDetail
                                 )
                             }
                         )
@@ -172,10 +150,11 @@ private fun HomeScreenContent(
 
                 // Random meal
                 item {
-                    Column {
-                        TitleHeader(title = "Recommended meal")
+                    Column(verticalArrangement = Arrangement.spacedBy(spacing)) {
+                        TitleHeader(title = "Something delicious for you")
                         when (homeState) {
                             is Resource.Error<*> -> {
+                                // TODO: Replace with a animation or a message.
                                 Text(text = homeState.message ?: "Error")
                             }
 
@@ -184,8 +163,8 @@ private fun HomeScreenContent(
                             }
 
                             is Resource.Success<*> -> {
-                                CardMealItem(
-                                    content = homeState.data ?: return@item,
+                                RandomRecipeItem(
+                                    model = homeState.data ?: return@item,
                                     onClick = { navigateToDetail(homeState.data.idMeal) }
                                 )
                             }
@@ -197,16 +176,55 @@ private fun HomeScreenContent(
     }
 }
 
-/* ---------- Title header ---------- */
+/* ---------- Headers ---------- */
+
+@Composable
+private fun HeaderItem() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
+        Text(
+            text = "Welcome!",
+            style = TextStyle(
+                fontWeight = FontWeight.Light,
+                fontSize = 26.sp,
+                textAlign = TextAlign.Start,
+                shadow = Shadow(
+                    color = MaterialTheme.colorScheme.scrim,
+                    blurRadius = 1f
+                )
+            ),
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
+        Text(
+            text = "What would you like to cook today?",
+            style = TextStyle(
+                fontWeight = FontWeight.Light,
+                fontSize = 22.sp,
+                textAlign = TextAlign.Start,
+                shadow = Shadow(
+                    color = MaterialTheme.colorScheme.scrim,
+                    blurRadius = 1f
+                )
+            ),
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun HeadersItemPreview() {
+    HeaderItem()
+}
 
 @Composable
 private fun TitleHeader(
     title: String
 ) {
-    Box(
-        modifier = Modifier
-            .padding(horizontal = 10.dp, vertical = 6.dp)
-    ) {
+    Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
         Text(
             text = title,
             fontSize = 20.sp,
@@ -218,18 +236,17 @@ private fun TitleHeader(
 @Preview
 @Composable
 private fun TitleHeaderPreview() {
-    TastyMealTheme {
-        TitleHeader(title = "Categories")
-    }
+    TitleHeader(title = "Categories")
 }
 
 /* ---------- Categories item ---------- */
 
 @Composable
 private fun CategoryItem(
-    model: CategoriesMeal
+    model: CategoriesMeal,
+    onClick: (String) -> Unit
 ) {
-    Card(
+    OutlinedCard(
         elevation = CardDefaults.cardElevation(8.dp),
         shape = RoundedCornerShape(10.dp)
     ) {
@@ -237,15 +254,22 @@ private fun CategoryItem(
             model = model.strThumb,
             contentDescription = model.strName,
             contentScale = ContentScale.Crop,
-            height = 100.dp,
+            onClick = { onClick(model.idMeal) },
+            height = 40.dp,
             modifier = Modifier
+                .align(Alignment.CenterHorizontally)
                 .padding(10.dp)
                 .clip(RoundedCornerShape(10.dp))
         )
         Text(
             text = model.strName,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            style = TextStyle(
+                fontWeight = FontWeight.Light,
+                fontSize = 14.sp
+            ),
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(horizontal = 10.dp, vertical = 8.dp)
         )
     }
 }
@@ -253,61 +277,122 @@ private fun CategoryItem(
 @Preview
 @Composable
 private fun CategoryItemPreview() {
-    TastyMealTheme {
-        CategoryItem(
-            model = CategoriesMeal(
-                idMeal = "1",
-                strName = "Beef",
-                strThumb = "image"
-            )
-        )
-    }
+    CategoryItem(
+        model = CategoriesMeal(
+            idMeal = "1",
+            strName = "Beef",
+            strThumb = "image"
+        ),
+        onClick = {}
+    )
 }
 
-/* ---------- Filter item ---------- */
+/* ---------- Recommendations item ---------- */
 
 @Composable
 private fun RecommendationsItem(
-    model: MinimalMeal
+    model: MinimalMeal,
+    onClick: (String) -> Unit
 ) {
-    Box {
-        CustomAsyncImage(
-            model = model.strMealThumb,
-            contentDescription = model.strMeal,
-            contentScale = ContentScale.Crop,
-            height = 260.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(10.dp))
-        )
-        Card(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 6.dp),
-            elevation = CardDefaults.cardElevation(6.dp),
-            shape = RoundedCornerShape(10.dp)
-        ) {
+    Card(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        elevation = CardDefaults.cardElevation(6.dp),
+        shape = RoundedCornerShape(10.dp)
+    ) {
+        Box {
+            CustomAsyncImage(
+                onClick = { onClick(model.idMeal) },
+                model = model.strMealThumb,
+                contentDescription = model.strMeal,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+                    .drawWithContent {
+                        val colors = listOf(Color.Black, Color.Black, Color.Black, Color.Transparent)
+
+                        drawContent()
+                        drawRect(
+                            brush = Brush.verticalGradient(colors = colors),
+                            blendMode = BlendMode.DstIn
+                        )
+                    }
+            )
             Text(
                 text = model.strMeal,
-                fontSize = 14.sp,
+                style = TextStyle(
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Start
+                ),
+                maxLines = 2,
                 modifier = Modifier
+                    .align(Alignment.BottomStart)
                     .padding(horizontal = 10.dp, vertical = 8.dp)
+                    .width(180.dp)
             )
         }
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showSystemUi = true)
 @Composable
 private fun RecommendationsItemPreview() {
-    TastyMealTheme {
-        RecommendationsItem(
-            model = MinimalMeal(
-                idMeal = "",
-                strMeal = "Lorem impsum",
-                strMealThumb = "image",
-                strCategory = "Beef"
-            )
+    RecommendationsItem(
+        model = MinimalMeal(
+            idMeal = "",
+            strMeal = "Lorem impsum",
+            strMealThumb = "image",
+            strCategory = "Beef"
+        ),
+        onClick = {}
+    )
+}
+
+/* ---------- Random recipe ---------- */
+
+@Composable
+private fun RandomRecipeItem(
+    model: MinimalMeal,
+    onClick: (String) -> Unit
+) {
+    OutlinedCard(
+        modifier = Modifier
+            .wrapContentHeight(Alignment.Top)
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(10.dp)
+    ) {
+        CustomAsyncImage(
+            onClick = { onClick(model.idMeal) },
+            model = model.strMealThumb,
+            contentDescription = model.strMeal,
+            contentScale = ContentScale.Crop,
+            height = 170.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp)
+                .clip(RoundedCornerShape(10.dp))
+        )
+        Text(
+            text = model.strMeal,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier
+                .padding(horizontal = 10.dp, vertical = 6.dp)
         )
     }
+}
+
+@Preview
+@Composable
+private fun RandomRecipeItemPreview() {
+    RandomRecipeItem(
+        model = MinimalMeal(
+            strMeal = "Beef asado",
+            strMealThumb = "image",
+            strCategory = "Beef",
+            idMeal = "0"
+        ),
+        onClick = {}
+    )
 }
