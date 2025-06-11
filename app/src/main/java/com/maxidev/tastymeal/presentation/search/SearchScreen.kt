@@ -13,6 +13,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -74,7 +77,25 @@ private fun SearchScreenContent(
         val pagingState = paging.search.collectAsLazyPagingItems()
 
         if (pagingState.itemCount == 0) {
-            Text(text = "Search something")
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Search some recipes",
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+                // TODO: Replace with image!
+                Icon(
+                    imageVector = Icons.Rounded.Search,
+                    contentDescription = null,
+                    modifier = Modifier.size(100.dp)
+                )
+            }
         } else {
             CustomLazyColumnPaging(
                 modifier = Modifier
