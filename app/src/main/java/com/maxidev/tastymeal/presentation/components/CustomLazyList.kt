@@ -211,6 +211,64 @@ fun <T: Any> CustomLazyHorizontalGridPaging(
 }
 
 @Composable
+fun <T: Any> CustomLazyVerticalGridPaging(
+    itemsContent: LazyPagingItems<T>,
+    key: ((item: T) -> Any),
+    columns: GridCells,
+    // Custom options
+    modifier: Modifier = Modifier,
+    lazyState: LazyGridState = rememberLazyGridState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
+    content: @Composable (T) -> Unit
+) {
+    LazyVerticalGrid(
+        modifier = modifier,
+        columns = columns,
+        state = lazyState,
+        contentPadding = contentPadding,
+        horizontalArrangement = horizontalArrangement,
+        verticalArrangement = verticalArrangement
+    ) {
+        items(
+            count = itemsContent.itemCount,
+            key = { key(itemsContent[it]!!) }
+        ) { index ->
+            val pagingContent = itemsContent[index]
+
+            if (pagingContent != null) {
+                content(pagingContent)
+            }
+        }
+
+        itemsContent.loadState.let { loadStates ->
+            when {
+                loadStates.refresh is LoadState.NotLoading && itemsContent.itemCount < 1 -> {
+                    // No data available
+                }
+                loadStates.refresh is LoadState.Error -> {
+                    /**
+                     * when ((loadStates.refresh as LoadState.Error).error) {
+                     * is HttpException -> { stringResource(R.string.something_wrong) }
+                     * is IOException -> { stringResource(R.string.internet_problem) }
+                     * else -> { stringResource(R.string.unknown_error) }
+                     */
+                }
+                loadStates.append is LoadState.Loading -> {
+                    item {
+                        CircularProgressIndicator()
+                    }
+                }
+                loadStates.append is LoadState.Error -> {
+                    // An error occurred
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun <T: Any> CustomLazyRowPaging(
     itemsContent: LazyPagingItems<T>,
     key: ((item: T) -> Any),
@@ -228,6 +286,67 @@ fun <T: Any> CustomLazyRowPaging(
         contentPadding = contentPadding,
         horizontalArrangement = horizontalArrangement,
         verticalAlignment = verticalAlignment
+    ) {
+        items(
+            count = itemsContent.itemCount,
+            key = { key(itemsContent[it]!!) }
+        ) { index ->
+            val pagingContent = itemsContent[index]
+
+            if (pagingContent != null) {
+                content(pagingContent)
+            }
+        }
+
+        itemsContent.loadState.let { loadStates ->
+            when {
+                loadStates.refresh is LoadState.NotLoading && itemsContent.itemCount < 1 -> {
+                    // No data available
+                }
+                loadStates.refresh is LoadState.Error -> {
+                    /**
+                     * when ((loadStates.refresh as LoadState.Error).error) {
+                     * is HttpException -> { stringResource(R.string.something_wrong) }
+                     * is IOException -> { stringResource(R.string.internet_problem) }
+                     * else -> { stringResource(R.string.unknown_error) }
+                     */
+                }
+                loadStates.refresh is LoadState.Loading -> {
+                    item {
+                        CircularProgressIndicator()
+                    }
+                }
+                loadStates.append is LoadState.Loading -> {
+                    item {
+                        CircularProgressIndicator()
+                    }
+                }
+                loadStates.append is LoadState.Error -> {
+                    // An error occurred
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun <T: Any> CustomLazyColumnPaging(
+    itemsContent: LazyPagingItems<T>,
+    key: ((item: T) -> Any),
+    // Custom options
+    modifier: Modifier = Modifier,
+    lazyState: LazyListState = rememberLazyListState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+    content: @Composable (T) -> Unit
+) {
+    LazyColumn(
+        modifier = modifier,
+        state = lazyState,
+        contentPadding = contentPadding,
+        horizontalAlignment = horizontalAlignment,
+        verticalArrangement = verticalArrangement
     ) {
         items(
             count = itemsContent.itemCount,

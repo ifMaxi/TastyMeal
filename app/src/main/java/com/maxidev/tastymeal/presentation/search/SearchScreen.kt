@@ -1,20 +1,19 @@
 package com.maxidev.tastymeal.presentation.search
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,18 +21,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.maxidev.tastymeal.domain.model.MinimalMeal
 import com.maxidev.tastymeal.presentation.components.CustomAsyncImage
+import com.maxidev.tastymeal.presentation.components.CustomLazyColumnPaging
 import com.maxidev.tastymeal.presentation.components.CustomSearchBar
-import com.maxidev.tastymeal.presentation.theme.TastyMealTheme
 
 @Composable
 fun SearchScreen(
@@ -41,7 +42,6 @@ fun SearchScreen(
     onClick: (String) -> Unit
 ) {
     val state by viewModel.searchState.collectAsStateWithLifecycle()
-    val lazyState = rememberLazyListState()
     val query by viewModel.input
 
     SearchScreenContent(
@@ -49,7 +49,6 @@ fun SearchScreen(
         onQueryChange = viewModel::onInputChange,
         onSearch = viewModel::searchMeals,
         paging = state,
-        lazyState = lazyState,
         onClick = onClick
     )
 }
@@ -60,103 +59,92 @@ private fun SearchScreenContent(
     onQueryChange: (String) -> Unit,
     onSearch: (String) -> Unit,
     paging: SearchUiState,
-    lazyState: LazyListState = rememberLazyListState(),
     onClick: (String) -> Unit
 ) {
     Scaffold(
-        topBar = {
+        bottomBar = {
             CustomSearchBar(
                 query = query,
                 onQueryChange = onQueryChange,
-                onSearch = onSearch
+                onSearch = onSearch,
+                content = { /* Do nothing. */ }
             )
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
-            val pagingState = paging.search.collectAsLazyPagingItems()
+        val pagingState = paging.search.collectAsLazyPagingItems()
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                state = lazyState,
-                contentPadding = PaddingValues(10.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                items(
-                    count = pagingState.itemCount
-                ) { index ->
-                    val item = pagingState[index]
-
-                    if (item != null) {
-                        CardMealItem(
-                            content = item,
-                            onClick = onClick
-                        )
-                    }
+        if (pagingState.itemCount == 0) {
+            Text(text = "Search something")
+        } else {
+            CustomLazyColumnPaging(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .imePadding()
+                    .consumeWindowInsets(innerPadding),
+                itemsContent = pagingState,
+                key = { it.idMeal },
+                contentPadding = innerPadding,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                content = {
+                    CardMealItem(
+                        content = it,
+                        onClick = onClick
+                    )
                 }
-
-                pagingState.loadState.let { loadType ->
-                    when {
-                        loadType.refresh is LoadState.NotLoading && pagingState.itemCount < 1 -> {
-                            // TODO: Text for no data available
-                        }
-                        loadType.refresh is LoadState.Error -> {
-                            /*
-                            * TODO: Handle error
-                            *  when ((loadStates.refresh as LoadState.Error).error) {
-                                        is HttpException -> { stringResource(R.string.something_wrong) }
-                                        is IOException -> { stringResource(R.string.internet_problem) }
-                                        else -> { stringResource(R.string.unknown_error) }
-                            * */
-                        }
-                        loadType.append is LoadState.Error -> {
-                            // TODO: Handle error "Error occurred"
-                        }
-                        loadType.append is LoadState.Loading -> {
-                            item { CircularProgressIndicator() }
-                        }
-                    }
-                }
-            }
+            )
         }
     }
 }
 
+/* ----- Search item ----- */
+
 @Composable
-fun CardMealItem(
+private fun CardMealItem(
     content: MinimalMeal,
     onClick: (String) -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(8.dp),
-        onClick = { onClick(content.idMeal) }
+    OutlinedCard(
+        modifier = Modifier.padding(horizontal = 10.dp),
+        shape = RoundedCornerShape(10.dp)
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier
+                .wrapContentHeight(Alignment.Top)
+                .fillMaxWidth()
+                .clickable { onClick(content.idMeal) },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            CustomAsyncImage(
-                model = content.strMealThumb,
-                contentDescription = content.strMeal,
-                height = 100.dp,
-                modifier = Modifier.clip(RoundedCornerShape(10.dp))
-            )
-            Column(
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
+            Column {
                 Text(
                     text = content.strMeal,
-                    fontWeight = FontWeight.Medium
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                        .widthIn(min = 50.dp, max = 200.dp)
                 )
                 Text(
                     text = content.strCategory,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Light
+                    style = TextStyle(fontWeight = FontWeight.Light),
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
                 )
             }
+            CustomAsyncImage(
+                model = content.strMealThumb,
+                contentDescription = content.strMeal,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .padding(6.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .size(120.dp)
+            )
         }
     }
 }
@@ -164,15 +152,13 @@ fun CardMealItem(
 @Preview
 @Composable
 private fun CardMealItemPreview() {
-    TastyMealTheme {
-        CardMealItem(
-            content = MinimalMeal(
-                strMeal = "Beef asado",
-                strMealThumb = "image",
-                strCategory = "Beef",
-                idMeal = "0"
-            ),
-            onClick = {}
-        )
-    }
+    CardMealItem(
+        content = MinimalMeal(
+            strMeal = "Beef asado",
+            strMealThumb = "image",
+            strCategory = "Beef",
+            idMeal = "0"
+        ),
+        onClick = {}
+    )
 }

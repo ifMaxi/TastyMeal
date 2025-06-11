@@ -2,7 +2,10 @@ package com.maxidev.tastymeal.presentation.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -32,6 +35,7 @@ fun CustomSearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
     onSearch: (String) -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
     // Custom options
     placeholder: @Composable (() -> Unit)? = { Text("Search") },
     leadingIcon: @Composable (() -> Unit)? = { Icon(Icons.Default.Search, contentDescription = "Search") },
@@ -67,6 +71,8 @@ fun CustomSearchBar(
         modifier = modifier
             .wrapContentHeight(Alignment.Top)
             .fillMaxWidth()
+            .padding(vertical = 10.dp)
+            .imePadding()
             .semantics { isTraversalGroup = false }
     ) {
         SearchBar(
@@ -74,10 +80,10 @@ fun CustomSearchBar(
                 .align(Alignment.TopCenter)
                 .semantics { traversalIndex = 0f },
             inputField = inputField,
-            expanded = expanded,
-            onExpandedChange = { expanded = it },
+            expanded = false,
+            onExpandedChange = { expanded = false },
             shape = RoundedCornerShape(10.dp),
-            content = { /* TODO: Do something */ }
+            content = content
         )
     }
 }
