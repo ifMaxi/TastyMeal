@@ -1,6 +1,6 @@
 package com.maxidev.tastymeal.domain.model
 
-data class FilterByCountryMeal(
+data class FilterByCategory(
     val idMeal: String,
     val strMeal: String,
     val strMealThumb: String

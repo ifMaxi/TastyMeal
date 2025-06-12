@@ -59,7 +59,8 @@ import com.maxidev.tastymeal.utils.Resource
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
-    navigateToDetail: (String) -> Unit
+    navigateToDetail: (String) -> Unit,
+    navigateToFilter: (String) -> Unit
 ) {
     val randomState by viewModel.randomFlow.collectAsStateWithLifecycle()
     val categoriesState by viewModel.categoriesFlow.collectAsStateWithLifecycle()
@@ -72,6 +73,7 @@ fun HomeScreen(
         categories = categoriesState.categories,
         searchByLetter = searchByLetter,
         navigateToDetail = navigateToDetail,
+        navigateToFilter = navigateToFilter,
         pullToRefresh = viewModel::refreshAll
     )
 }
@@ -85,6 +87,7 @@ private fun HomeScreenContent(
     categories: List<CategoriesMeal>,
     searchByLetter: HomeUiState,
     navigateToDetail: (String) -> Unit,
+    navigateToFilter: (String) -> Unit,
     pullToRefresh: () -> Unit
 ) {
     val pagingItems = searchByLetter.searchByLetter.collectAsLazyPagingItems()
@@ -122,7 +125,7 @@ private fun HomeScreenContent(
                         content = {
                             CategoryItem(
                                 model = it,
-                                onClick = { /* TODO: Navigate to recipe list. */ }
+                                onClick = navigateToFilter
                             )
                         }
                     )
@@ -248,13 +251,13 @@ private fun CategoryItem(
 ) {
     OutlinedCard(
         elevation = CardDefaults.cardElevation(8.dp),
-        shape = RoundedCornerShape(10.dp)
+        shape = RoundedCornerShape(10.dp),
+        onClick = { onClick(model.strName) }
     ) {
         CustomAsyncImage(
             model = model.strThumb,
             contentDescription = model.strName,
             contentScale = ContentScale.Crop,
-            onClick = { onClick(model.idMeal) },
             height = 40.dp,
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)

@@ -22,7 +22,6 @@ class HomeRepositoryImpl @Inject constructor(
 ): HomeRepository {
 
     private val categoriesDao = dataBase.categoriesDao()
-    private val filtersDao = dataBase.filtersDao()
 
     override suspend fun fetchRandomMeal(): List<MinimalMeal> =
         api.getRandomMeal()
@@ -58,22 +57,4 @@ class HomeRepositoryImpl @Inject constructor(
                 }
             }
     }
-
-    /* ----- Filter methods ----- */
-
-//    override fun fetchMealByCountry(country: String): Flow<List<FilterByCountryMeal>> =
-//        filtersDao.getFilters()
-//            .map { it.map(FiltersEntity::asDomain) }
-//            .onStart { cacheMealByCountry(country) }
-//            .flowOn(Dispatchers.IO)
-//
-//    private suspend fun cacheMealByCountry(country: String) {
-//        api.getFilters(areas = country)
-//            .asEntity()
-//            .also {
-//                dataBase.withTransaction {
-//                    filtersDao.upsertAll(it.orEmpty())
-//                }
-//            }
-//    }
 }

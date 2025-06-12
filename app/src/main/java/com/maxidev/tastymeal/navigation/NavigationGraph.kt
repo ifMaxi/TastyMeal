@@ -28,6 +28,7 @@ import androidx.navigation.toRoute
 import com.maxidev.tastymeal.presentation.bookmark.BookmarkScreen
 import com.maxidev.tastymeal.presentation.detail.MealDetailScreen
 import com.maxidev.tastymeal.presentation.detail.MealDetailScreenOffline
+import com.maxidev.tastymeal.presentation.filters.FilterByCategoryScreen
 import com.maxidev.tastymeal.presentation.home.HomeScreen
 import com.maxidev.tastymeal.presentation.recipe.MyRecipesScreen
 import com.maxidev.tastymeal.presentation.recipe.detail.RecipeDetailScreen
@@ -87,6 +88,9 @@ fun NavigationGraph(
                 HomeScreen(
                     navigateToDetail = { mealId ->
                         navController.navigate(NavDestinations.MealDetail(mealId))
+                    },
+                    navigateToFilter = { filterId ->
+                        navController.navigate(NavDestinations.Filters(filterId))
                     }
                 )
             }
@@ -147,6 +151,15 @@ fun NavigationGraph(
                     popBackStack = { navController.popBackStack() }
                 )
             }
+
+            composable<NavDestinations.Filters> { mealId ->
+                FilterByCategoryScreen(
+                    navigateBack = { navController.popBackStack() },
+                    navigateToDetail = {
+                        navController.navigate(NavDestinations.MealDetail(it))
+                    }
+                )
+            }
         }
     }
 }
@@ -162,6 +175,7 @@ sealed interface NavDestinations {
     @Serializable data class MealDetailOffline(val mealId: String): NavDestinations
     @Serializable data class RecipeDetail(val recipeId: Long): NavDestinations
     @Serializable data class EditRecipeDetail(val recipeId: Long): NavDestinations
+    @Serializable data class Filters(val filterId: String): NavDestinations
 }
 
 data class TopLevelRoute<T: Any>(

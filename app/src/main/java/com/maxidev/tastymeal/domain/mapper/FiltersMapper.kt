@@ -1,21 +1,13 @@
 package com.maxidev.tastymeal.domain.mapper
 
-import com.maxidev.tastymeal.data.local.entity.FiltersEntity
 import com.maxidev.tastymeal.data.remote.dto.FilterDto
-import com.maxidev.tastymeal.domain.model.FilterByCountryMeal
+import com.maxidev.tastymeal.domain.model.FilterByCategory
 
-fun FilterDto.asEntity() =
+fun FilterDto.asDomain() =
     this.meals?.map { data ->
-        FiltersEntity(
+        FilterByCategory(
             idMeal = data?.idMeal.orEmpty(),
             strMeal = data?.strMeal.orEmpty(),
             strMealThumb = data?.strMealThumb.orEmpty()
         )
     }
-
-fun FiltersEntity.asDomain() =
-    FilterByCountryMeal(
-        idMeal = idMeal,
-        strMeal = strMeal,
-        strMealThumb = strMealThumb
-    )

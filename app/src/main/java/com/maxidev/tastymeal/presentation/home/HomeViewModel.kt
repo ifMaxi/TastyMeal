@@ -24,8 +24,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val randomMealUseCase: RandomMealUseCase,
     categoriesUseCase: CategoriesUseCase,
+    private val randomMealUseCase: RandomMealUseCase,
     private val searchMealUseCase: SearchMealUseCase
 ): ViewModel() {
 
@@ -40,7 +40,9 @@ class HomeViewModel @Inject constructor(
     val isRefreshing = _isRefreshing.asStateFlow()
 
     init {
-        val abc = ('a'..'z').toList().filterNot { it in listOf('ñ') }
+        val abc = ('a'..'z').toList().filterNot {
+            it in listOf('ñ')
+        }
 
         mealByLetter(letter = abc.random().toString())
         randomMeal()
@@ -84,7 +86,7 @@ class HomeViewModel @Inject constructor(
         _isRefreshing.update { true }
 
         viewModelScope.launch {
-            delay(2000)
+            delay(1500)
             randomMeal()
             mealByLetter()
             _isRefreshing.update { false }

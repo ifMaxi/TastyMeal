@@ -9,6 +9,4 @@ interface HomeRepository {
     suspend fun fetchRandomMeal(): List<MinimalMeal>
 
     fun fetchCategories(): Flow<List<CategoriesMeal>>
-
-//    fun fetchMealByCountry(country: String): Flow<List<FilterByCountryMeal>>
 }

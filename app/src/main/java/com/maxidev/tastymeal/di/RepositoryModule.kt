@@ -1,11 +1,13 @@
 package com.maxidev.tastymeal.di
 
 import com.maxidev.tastymeal.data.repository.BookmarkRepositoryImpl
+import com.maxidev.tastymeal.data.repository.FiltersRepositoryImpl
 import com.maxidev.tastymeal.data.repository.HomeRepositoryImpl
 import com.maxidev.tastymeal.data.repository.MealDetailRepositoryImpl
 import com.maxidev.tastymeal.data.repository.RecipeRepositoryImpl
 import com.maxidev.tastymeal.data.repository.SearchMealRepositoryImpl
 import com.maxidev.tastymeal.domain.repository.BookmarkRepository
+import com.maxidev.tastymeal.domain.repository.FiltersRepository
 import com.maxidev.tastymeal.domain.repository.HomeRepository
 import com.maxidev.tastymeal.domain.repository.MealDetailRepository
 import com.maxidev.tastymeal.domain.repository.RecipeRepository
@@ -33,4 +35,7 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindRecipeRepository(impl: RecipeRepositoryImpl): RecipeRepository
+
+    @Binds
+    abstract fun bindFiltersRepository(impl: FiltersRepositoryImpl): FiltersRepository
 }
