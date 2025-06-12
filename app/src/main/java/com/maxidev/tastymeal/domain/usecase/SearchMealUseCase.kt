@@ -6,9 +6,6 @@ import javax.inject.Inject
 class SearchMealUseCase @Inject constructor(
     private val repository: SearchMealRepository
 ) {
-    operator fun invoke(
-        query: String,
-        //queryByLetter: String?
-    ) =
+    operator fun invoke(query: String) =
         repository.fetchSearchedMeals(query = query)
 }
