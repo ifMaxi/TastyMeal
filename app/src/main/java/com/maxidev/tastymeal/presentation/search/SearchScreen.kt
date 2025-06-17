@@ -1,9 +1,11 @@
 package com.maxidev.tastymeal.presentation.search
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,10 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -25,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -34,9 +36,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
+import com.maxidev.tastymeal.R
 import com.maxidev.tastymeal.domain.model.MinimalMeal
 import com.maxidev.tastymeal.presentation.components.CustomAsyncImage
-import com.maxidev.tastymeal.presentation.components.CustomLazyColumnPaging
 import com.maxidev.tastymeal.presentation.components.CustomSearchBar
 
 @Composable
@@ -75,45 +78,35 @@ private fun SearchScreenContent(
         }
     ) { innerPadding ->
         val pagingState = paging.search.collectAsLazyPagingItems()
+        val lazyState = rememberLazyListState()
 
         if (pagingState.itemCount == 0) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Search some recipes",
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-                // TODO: Replace with image!
-                Icon(
-                    imageVector = Icons.Rounded.Search,
-                    contentDescription = null,
-                    modifier = Modifier.size(100.dp)
-                )
-            }
+            SearchStandByItem()
         } else {
-            CustomLazyColumnPaging(
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .imePadding()
                     .consumeWindowInsets(innerPadding),
-                itemsContent = pagingState,
-                key = { it.idMeal },
+                state = lazyState,
                 contentPadding = innerPadding,
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                content = {
-                    CardMealItem(
-                        content = it,
-                        onClick = onClick
-                    )
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                items(
+                    count = pagingState.itemCount,
+                    key = pagingState.itemKey { it.idMeal }
+                ) { index ->
+                    val pagingContent = pagingState[index]
+
+                    if (pagingContent != null) {
+                        CardMealItem(
+                            content = pagingContent,
+                            onClick = onClick
+                        )
+                    }
                 }
-            )
+            }
         }
     }
 }
@@ -182,4 +175,36 @@ private fun CardMealItemPreview() {
         ),
         onClick = {}
     )
+}
+
+/* ----- Search stand by ----- */
+
+@Composable
+private fun SearchStandByItem() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "Find something delicious",
+            style = TextStyle(
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium
+            )
+        )
+        Spacer(modifier = Modifier.size(20.dp))
+        Image(
+            painter = painterResource(R.drawable.search_recipe),
+            contentDescription = null,
+            modifier = Modifier
+                .size(80.dp)
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun SearchStandByItemPreview() {
+    SearchStandByItem()
 }
