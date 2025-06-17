@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.progressSemantics
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -26,9 +27,9 @@ import androidx.compose.material.icons.rounded.Link
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.SmartDisplay
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.OutlinedCard
@@ -104,10 +105,10 @@ private fun ScreenContent(
 
     Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarState) }) { innerPadding ->
         when (meal) {
-            is Resource.Error -> { Text(text = meal.message.orEmpty()) }
-            is Resource.Loading -> {
-                CircularProgressIndicator()
+            is Resource.Error -> {
+                ErrorStateItem(navigateBack = { onEvent(MealDetailUiEvents.NavigateBack) })
             }
+            is Resource.Loading -> { LoadingStateItem() }
             is Resource.Success -> {
                 val tintColor = if (isBookmarked) Color.Red else LocalContentColor.current
 
@@ -552,4 +553,50 @@ private fun IngredientsBodyPreview() {
             measureIng = listOf("Measure 1", "Measure 2", "Measure 3")
         )
     }
+}
+
+/* ----- Loading and error states ----- */
+
+@Composable
+private fun LoadingStateItem() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        LinearProgressIndicator(
+            modifier = Modifier
+                .progressSemantics()
+        )
+    }
+}
+
+@Composable
+private fun ErrorStateItem(navigateBack: () -> Unit) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CustomIconButton(
+            imageVector = Icons.Rounded.ArrowBackIosNew,
+            contentDescription = "Navigate back.",
+            onClick = navigateBack,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(16.dp)
+        )
+        Text(
+            text = "Something is wrong... Please try again or check your internet connection.",
+            fontSize = 18.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .padding(horizontal = 20.dp, vertical = 10.dp)
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LoadingStateItemPreview() {
+    LoadingStateItem()
+    ErrorStateItem(navigateBack = {})
 }
