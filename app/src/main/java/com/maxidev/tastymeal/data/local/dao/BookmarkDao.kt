@@ -14,7 +14,7 @@ interface BookmarkDao {
     fun getBookmark(): Flow<List<MealEntity>>
 
     @Query("SELECT * FROM meal WHERE idMeal = :id")
-    fun getBookmarkById(id: String): Flow<MealEntity>
+    fun getBookmarkById(id: String): Flow<MealEntity?>
 
     @Query("SELECT bookmarked FROM meal WHERE idMeal = :id")
     fun isBookmarked(id: String): Flow<Boolean>

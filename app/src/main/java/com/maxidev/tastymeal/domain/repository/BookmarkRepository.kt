@@ -7,7 +7,7 @@ interface BookmarkRepository {
 
     fun getAllBookmarks(): Flow<List<Meal>>
 
-    fun getBookmarkById(id: String): Flow<Meal>
+    fun getBookmarkById(id: String): Flow<Meal?>
 
     fun isBookmark(id: String): Flow<Boolean>
 

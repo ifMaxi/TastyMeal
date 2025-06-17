@@ -3,53 +3,60 @@
 package com.maxidev.tastymeal.presentation.detail
 
 import android.content.Intent
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBackIosNew
-import androidx.compose.material.icons.rounded.BookmarkBorder
-import androidx.compose.material.icons.rounded.PlayCircle
+import androidx.compose.material.icons.rounded.Bookmark
+import androidx.compose.material.icons.rounded.Link
 import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material.icons.rounded.Source
+import androidx.compose.material.icons.rounded.SmartDisplay
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,8 +65,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.maxidev.tastymeal.domain.model.Meal
 import com.maxidev.tastymeal.presentation.components.CustomAsyncImage
-import com.maxidev.tastymeal.presentation.components.CustomCenteredTopBar
-import com.maxidev.tastymeal.presentation.components.CustomExtendedFab
+import com.maxidev.tastymeal.presentation.components.CustomButton
 import com.maxidev.tastymeal.presentation.components.CustomIconButton
 import com.maxidev.tastymeal.presentation.theme.TastyMealTheme
 import com.maxidev.tastymeal.utils.Resource
@@ -79,12 +85,8 @@ fun MealDetailScreen(
         onEvent = { event ->
             when (event) {
                 MealDetailUiEvents.NavigateBack -> { navigateBack() }
-                is MealDetailUiEvents.AddToBookmark -> {
-                    viewModel.saveToBookmark(event.add)
-                }
-                is MealDetailUiEvents.RemoveToBookmark -> {
-                    viewModel.deleteFromBookmark(event.remove)
-                }
+                is MealDetailUiEvents.AddToBookmark -> { viewModel.saveToBookmark(event.add) }
+                is MealDetailUiEvents.RemoveToBookmark -> { viewModel.deleteFromBookmark(event.remove) }
             }
         }
     )
@@ -99,107 +101,102 @@ private fun ScreenContent(
     val context = LocalContext.current
     val snackbarState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    val sourceUri = meal.data?.strSource?.toUri()
-    val youTubeUri = meal.data?.strYouTube?.toUri()
-    val browserIntent = Intent(Intent.ACTION_VIEW, sourceUri)
-    val youTubeIntent = Intent(Intent.ACTION_VIEW, youTubeUri)
-        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    val sendChooser = Intent.createChooser(
-        Intent().apply {
-            action = Intent.ACTION_SEND
-            putExtra(Intent.EXTRA_TEXT, meal.data?.strSource)
-            type = "text/plain"
-        }, "Share recipe."
-    )
 
-    // TODO: Optimize the display and remove a small freeze when navigating to the screen.
-    Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarState) },
-        topBar = {
-            CustomCenteredTopBar(
-                navigationIcon = {
-                    Icon(
-                        imageVector = Icons.Rounded.ArrowBackIosNew,
-                        contentDescription = "Back",
-                        modifier = Modifier
-                            .clickable { onEvent(MealDetailUiEvents.NavigateBack) }
-                    )
-                },
-                actions = {
-                    val tintColor = if (isBookmarked) Color.Red else Color.Unspecified
-
-                    CustomIconButton(
-                        imageVector = Icons.Rounded.BookmarkBorder,
-                        contentDescription = "Bookmark",
-                        tint = tintColor,
-                        onClick = {
-                            if (isBookmarked) {
-                                onEvent(
-                                    MealDetailUiEvents.RemoveToBookmark(
-                                        remove = meal.data?.copy(bookmarked = false)
-                                            ?: return@CustomIconButton
-                                    )
-                                )
-                                scope.launch {
-                                    snackbarState.showSnackbar(
-                                        message = "Removed from bookmarks.",
-                                        duration = SnackbarDuration.Short
-                                    )
-                                }
-                            } else {
-                                onEvent(
-                                    MealDetailUiEvents.AddToBookmark(
-                                        add = meal.data?.copy(bookmarked = true)
-                                            ?: return@CustomIconButton
-                                    )
-                                )
-                                scope.launch {
-                                    snackbarState.showSnackbar(
-                                        message = "Saved to bookmarks.",
-                                        duration = SnackbarDuration.Short
-                                    )
-                                }
-                            }
-                        }
-                    )
-                    CustomIconButton(
-                        imageVector = Icons.Rounded.Share,
-                        contentDescription = "Share",
-                        onClick = { context.startActivity(sendChooser) }
-                    )
-                    // TODO: If source not exist. Hide this button.
-                    CustomIconButton(
-                        imageVector = Icons.Rounded.Source,
-                        contentDescription = "Source",
-                        onClick = { context.startActivity(browserIntent) }
-                    )
-                }
-            )
-        },
-        floatingActionButton = {
-            // TODO: If not exist youtube link, hide this button or show a message.
-            CustomExtendedFab(
-                onClick = { context.startActivity(youTubeIntent) },
-                text = { Text(text = "Watch on YouTube") },
-                icon = {
-                    Icon(
-                        imageVector = Icons.Rounded.PlayCircle,
-                        contentDescription = "Watch on YouTube"
-                    )
-                },
-                shape = RoundedCornerShape(10.dp),
-                elevation = FloatingActionButtonDefaults.elevation(6.dp)
-            )
-        },
-        floatingActionButtonPosition = FabPosition.Center
-    ) { innerPadding ->
+    Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarState) }) { innerPadding ->
         when (meal) {
             is Resource.Error -> { Text(text = meal.message.orEmpty()) }
             is Resource.Loading -> {
                 CircularProgressIndicator()
             }
             is Resource.Success -> {
+                val tintColor = if (isBookmarked) Color.Red else LocalContentColor.current
+
                 MealDetailContent(
+                    tint = tintColor,
+                    navigateBack = { onEvent(MealDetailUiEvents.NavigateBack) },
+                    onBookmark = {
+                        if (isBookmarked) {
+                            onEvent(
+                                MealDetailUiEvents.RemoveToBookmark(
+                                    remove = meal.data.copy(bookmarked = false)
+                                )
+                            )
+                            scope.launch {
+                                snackbarState.showSnackbar(
+                                    message = "Removed from bookmarks.",
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        } else {
+                            onEvent(
+                                MealDetailUiEvents.AddToBookmark(
+                                    add = meal.data.copy(bookmarked = true)
+                                )
+                            )
+                            scope.launch {
+                                snackbarState.showSnackbar(
+                                    message = "Saved to bookmarks.",
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        }
+                    },
+                    onShare = {
+                        val dataStrSource = meal.data.strSource
+                        val sendChooser = Intent.createChooser(
+                            Intent().apply {
+                                action = Intent.ACTION_SEND
+                                putExtra(Intent.EXTRA_TEXT, dataStrSource)
+                                type = "text/plain"
+                            }, "Share recipe."
+                        )
+
+                        if (dataStrSource.isNotEmpty()) {
+                            context.startActivity(sendChooser)
+                        } else {
+                            scope.launch {
+                                snackbarState.showSnackbar(
+                                    message = "No source available.",
+                                    duration = SnackbarDuration.Short,
+                                    actionLabel = "Dismiss"
+                                )
+                            }
+                        }
+                    },
+                    onLink = {
+                        val sourceUri = meal.data.strSource.toUri()
+                        val browserIntent = Intent(Intent.ACTION_VIEW, sourceUri)
+
+                        if (sourceUri != Uri.EMPTY) {
+                            context.startActivity(browserIntent)
+                        } else {
+                            scope.launch {
+                                snackbarState.showSnackbar(
+                                    message = "No source available.",
+                                    duration = SnackbarDuration.Short,
+                                    actionLabel = "Dismiss"
+                                )
+                            }
+                        }
+                    },
+                    onWatchInYoutube = {
+                        val youTubeUri = meal.data.strYouTube.toUri()
+                        val youTubeIntent = Intent(Intent.ACTION_VIEW, youTubeUri)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+                        if (youTubeUri != Uri.EMPTY) {
+                            context.startActivity(youTubeIntent)
+                        } else {
+                            scope.launch {
+                                snackbarState.showSnackbar(
+                                    message = "No video available.",
+                                    duration = SnackbarDuration.Short,
+                                    actionLabel = "Dismiss"
+                                )
+                            }
+                        }
+                    },
+                    zoomImage = { /* TODO: Navigate to zoom. */ },
                     meal = meal.data ?: return@Scaffold,
                     modifier = Modifier.padding(innerPadding)
                 )
@@ -208,166 +205,71 @@ private fun ScreenContent(
     }
 }
 
-/* ----- Offline ----- */
-
-@Composable
-fun MealDetailScreenOffline(
-    viewModel: MealDetailOfflineViewModel = hiltViewModel(),
-    navigateBack: () -> Unit
-) {
-    val state by viewModel.mealById.collectAsStateWithLifecycle()
-    val isBookmark by viewModel.isBookmarked().collectAsStateWithLifecycle(false)
-
-    ScreenContentOffline(
-        isBookmarked = isBookmark,
-        meal = state,
-        onEvent = { event ->
-            when (event) {
-                MealDetailUiEvents.NavigateBack -> { navigateBack() }
-                is MealDetailUiEvents.AddToBookmark -> {
-                    viewModel.saveToBookmark(event.add)
-                }
-                is MealDetailUiEvents.RemoveToBookmark -> {
-                    viewModel.deleteFromBookmark(event.remove)
-                }
-            }
-        }
-    )
-}
-
-@Composable
-private fun ScreenContentOffline(
-    isBookmarked: Boolean,
-    meal: Meal,
-    onEvent: (MealDetailUiEvents) -> Unit
-) {
-    val context = LocalContext.current
-    val snackbarState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
-    val sourceUri = meal.strSource.toUri()
-    val youTubeUri = meal.strYouTube.toUri()
-    val browserIntent = Intent(Intent.ACTION_VIEW, sourceUri)
-    val youTubeIntent = Intent(Intent.ACTION_VIEW, youTubeUri)
-        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    val sendChooser = Intent.createChooser(
-        Intent().apply {
-            action = Intent.ACTION_SEND
-            putExtra(Intent.EXTRA_TEXT, meal.strSource)
-            type = "text/plain"
-        }, "Share recipe."
-    )
-
-    // TODO: Optimize the display and remove a small freeze when navigating to the screen.
-    Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarState) },
-        topBar = {
-            CustomCenteredTopBar(
-                navigationIcon = {
-                    Icon(
-                        imageVector = Icons.Rounded.ArrowBackIosNew,
-                        contentDescription = "Back",
-                        modifier = Modifier
-                            .clickable { onEvent(MealDetailUiEvents.NavigateBack) }
-                    )
-                },
-                actions = {
-                    val tintColor = if (isBookmarked) Color.Red else Color.Unspecified
-
-                    CustomIconButton(
-                        imageVector = Icons.Rounded.BookmarkBorder,
-                        contentDescription = "Bookmark",
-                        tint = tintColor,
-                        onClick = {
-                            if (isBookmarked) {
-                                onEvent(
-                                    MealDetailUiEvents.RemoveToBookmark(
-                                        remove = meal.copy(bookmarked = false)
-                                    )
-                                )
-                                scope.launch {
-                                    snackbarState.showSnackbar(
-                                        message = "Removed from bookmarks.",
-                                        duration = SnackbarDuration.Short
-                                    )
-                                }
-                            } else {
-                                onEvent(
-                                    MealDetailUiEvents.AddToBookmark(
-                                        add = meal.copy(bookmarked = true)
-                                    )
-                                )
-                                scope.launch {
-                                    snackbarState.showSnackbar(
-                                        message = "Saved to bookmarks.",
-                                        duration = SnackbarDuration.Short
-                                    )
-                                }
-                            }
-                        }
-                    )
-                    CustomIconButton(
-                        imageVector = Icons.Rounded.Share,
-                        contentDescription = "Share",
-                        onClick = { context.startActivity(sendChooser) }
-                    )
-                    // TODO: If source not exist. Hide this button.
-                    CustomIconButton(
-                        imageVector = Icons.Rounded.Source,
-                        contentDescription = "Source",
-                        onClick = { context.startActivity(browserIntent) }
-                    )
-                }
-            )
-        },
-        floatingActionButton = {
-            // TODO: If not exist youtube link, hide this button or show a message.
-            CustomExtendedFab(
-                onClick = { context.startActivity(youTubeIntent) },
-                text = { Text(text = "Watch on YouTube") },
-                icon = {
-                    Icon(
-                        imageVector = Icons.Rounded.PlayCircle,
-                        contentDescription = "Watch on YouTube"
-                    )
-                },
-                shape = RoundedCornerShape(10.dp),
-                elevation = FloatingActionButtonDefaults.elevation(6.dp)
-            )
-        },
-        floatingActionButtonPosition = FabPosition.Center
-    ) { innerPadding ->
-        MealDetailContent(
-            meal = meal,
-            modifier = Modifier.padding(innerPadding)
-        )
-    }
-}
-
 /* ----- Content ----- */
 
 @Composable
-private fun MealDetailContent(
+fun MealDetailContent(
     modifier: Modifier = Modifier,
-    meal: Meal
+    meal: Meal,
+    tint: Color,
+    zoomImage: (String) -> Unit,
+    onShare: () -> Unit,
+    onBookmark: () -> Unit,
+    onLink: () -> Unit,
+    onWatchInYoutube: () -> Unit,
+    navigateBack: () -> Unit
 ) {
     Column(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
+        val tabList = listOf("Instructions", "Ingredients", "Resources")
+
         ImageWithTextHeader(
             strMeal = meal.strMeal,
             strMealThumb = meal.strMealThumb,
-            strCategory = meal.strCategory
+            strCategory = meal.strCategory,
+            zoomImage = zoomImage,
+            tint = tint,
+            onBookmark = onBookmark,
+            navigateBack = navigateBack
         )
-        InstructionsBody(strInstructions = meal.strInstructions)
-        IngredientsBody(
-            ingredients = meal.strIngredients,
-            measureIng = meal.strMeasure
+        PrimaryTabRow(
+            selectedTabIndex = selectedIndex,
+            tabs = {
+                tabList.forEachIndexed { index, tab ->
+                    Tab(
+                        selected = selectedIndex == index,
+                        onClick = { selectedIndex = index },
+                        text = { Text(text = tab) }
+                    )
+                }
+            }
         )
-        TagsBottom(tags = meal.strTags)
+
+        when (selectedIndex) {
+            0 -> {
+                InstructionsBody(strInstructions = meal.strInstructions)
+            }
+            1 -> {
+                IngredientsBody(
+                    ingredients = meal.strIngredients,
+                    measureIng = meal.strMeasure
+                )
+            }
+            2 -> {
+                ButtonActionsItem(
+                    onShare = onShare,
+                    onLink = onLink,
+                    onWatchInYoutube = onWatchInYoutube
+                )
+            }
+        }
+        Spacer(modifier = Modifier.size(16.dp))
     }
 }
 
@@ -377,46 +279,76 @@ private fun MealDetailContent(
 private fun ImageWithTextHeader(
     strMeal: String,
     strMealThumb: String,
-    strCategory: String
+    strCategory: String,
+    tint: Color,
+    zoomImage: (String) -> Unit,
+    onBookmark: () -> Unit,
+    navigateBack: () -> Unit
 ) {
     Box {
         CustomAsyncImage(
             model = strMealThumb,
             contentDescription = strMeal,
             contentScale = ContentScale.Crop,
-            height = 300.dp,
-            onClick = { /* TODO: Zoom image. */ },
-            modifier = Modifier
-                .fillMaxWidth()
-                .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
-                .drawWithContent {
-                    val colors = listOf(Color.Black, Color.Black, Color.Transparent)
-
-                    drawContent()
-                    drawRect(
-                        brush = Brush.verticalGradient(colors = colors),
-                        blendMode = BlendMode.DstIn
-                    )
-                }
+            onClick = { zoomImage(strMealThumb) },
+            modifier = Modifier.fillMaxWidth()
         )
-        Column(
+        OutlinedCard(
             modifier = Modifier
                 .wrapContentHeight(Alignment.Top)
                 .fillMaxWidth()
-                .padding(horizontal = 10.dp, vertical = 6.dp)
-                .align(Alignment.BottomStart),
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .align(Alignment.BottomCenter)
+                .padding(16.dp),
+            shape = RoundedCornerShape(10.dp),
+            elevation = CardDefaults.outlinedCardElevation(6.dp)
         ) {
             Text(
                 text = strMeal,
-                fontSize = 18.sp,
                 fontWeight = FontWeight.Medium,
-                maxLines = 2
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(start = 16.dp, end = 16.dp, top = 6.dp)
             )
+            Spacer(modifier = Modifier.size(6.dp))
             Text(
-                text = strCategory
+                text = strCategory,
+                fontSize = 14.sp,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(start = 16.dp, end = 16.dp, bottom = 6.dp)
             )
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TooltipBox(
+                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                tooltip = { PlainTooltip { Text(text = "Navigate Back.") } },
+                state = rememberTooltipState()
+            ) {
+                CustomIconButton(
+                    imageVector = Icons.Rounded.ArrowBackIosNew,
+                    contentDescription = "Navigate back.",
+                    onClick = navigateBack
+                )
+            }
+            TooltipBox(
+                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                tooltip = { PlainTooltip { Text(text = "Add to bookmarks.") } },
+                state = rememberTooltipState()
+            ) {
+                CustomIconButton(
+                    imageVector = Icons.Rounded.Bookmark,
+                    contentDescription = "Add to bookmarks.",
+                    tint = tint,
+                    onClick = onBookmark
+                )
+            }
         }
     }
 }
@@ -428,9 +360,69 @@ private fun ImageWithTextHeaderPreview() {
         ImageWithTextHeader(
             strMeal = "Lorem Impsum",
             strMealThumb = "Image",
-            strCategory = "Category"
+            strCategory = "Category",
+            zoomImage = {},
+            onBookmark = {},
+            navigateBack = {},
+            tint = Color.Red
         )
     }
+}
+
+/* ----- Button actions ----- */
+
+@Composable
+private fun ButtonActionsItem(
+    onShare: () -> Unit,
+    onLink: () -> Unit,
+    onWatchInYoutube: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .wrapContentHeight(Alignment.Top)
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        CustomButton(
+            imageVector = Icons.Rounded.Link,
+            contentDescription = "View in browser.",
+            onClick = onLink,
+            name = "View in browser",
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp)
+        )
+        CustomButton(
+            imageVector = Icons.Rounded.SmartDisplay,
+            contentDescription = "Watch on youtube.",
+            onClick = onWatchInYoutube,
+            name = "Watch on youtube",
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp)
+        )
+        CustomButton(
+            imageVector = Icons.Rounded.Share,
+            contentDescription = "Share recipe.",
+            onClick = onShare,
+            name = "Share recipe",
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp)
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ButtonActionsItemPreview() {
+    ButtonActionsItem(
+        onShare = {},
+        onLink = {},
+        onWatchInYoutube = {}
+    )
 }
 
 /* ----- Instructions body ----- */
@@ -442,15 +434,42 @@ private fun InstructionsBody(
     val regex = "(?<=\\.)\\s*(\\r\\n|\\n)".toRegex()
     val steps = regex.split(strInstructions.trim()).map { it.trim() }
 
-    Column {
-        Text(text = "Instructions")
+    Column(
+        modifier = Modifier
+            .wrapContentSize()
+            .padding(horizontal = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Instructions",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.align(Alignment.Start)
+        )
+        Spacer(modifier = Modifier.size(20.dp))
+
         steps.forEachIndexed { index, step ->
-            Text(
-                text = "Step ${index + 1}: $step",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp, vertical = 8.dp)
-            )
+            OutlinedCard(
+                shape = RoundedCornerShape(10.dp),
+                elevation = CardDefaults.outlinedCardElevation(6.dp)
+            ) {
+                Text(
+                    text = "Step ${index + 1}",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 6.dp)
+                )
+                Text(
+                    text = step,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, top = 6.dp, end = 16.dp, bottom = 16.dp)
+                )
+            }
+            Spacer(modifier = Modifier.size(16.dp))
         }
     }
 }
@@ -491,18 +510,35 @@ private fun IngredientsBody(
     val zipLists = ingredients.zip(measureIng)
 
     Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .wrapContentHeight(Alignment.Top)
-            .fillMaxWidth()
+            .wrapContentSize()
+            .padding(horizontal = 16.dp)
     ) {
-        Text(text = "Ingredients")
+        Text(
+            text = "Ingredients",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.align(Alignment.Start)
+        )
+        Spacer(modifier = Modifier.size(20.dp))
 
-        zipLists.forEach { (ingr, quantity) ->
-            ListItem(
-                headlineContent = { Text(text = ingr) },
-                trailingContent = { Text(text = quantity) }
-            )
-            HorizontalDivider()
+        OutlinedCard(
+            shape = RoundedCornerShape(10.dp),
+            elevation = CardDefaults.outlinedCardElevation(6.dp)
+        ) {
+            zipLists.forEach { (ingr, quantity) ->
+                ListItem(
+                    headlineContent = { Text(text = ingr) },
+                    trailingContent = {
+                        Text(
+                            text = quantity,
+                            fontSize = 14.sp
+                        )
+                    }
+                )
+                HorizontalDivider()
+            }
         }
     }
 }
@@ -515,53 +551,5 @@ private fun IngredientsBodyPreview() {
             ingredients = listOf("Ingredient 1", "Ingredient 2", "Ingredient 3"),
             measureIng = listOf("Measure 1", "Measure 2", "Measure 3")
         )
-    }
-}
-
-/* ----- Tags bottom ----- */
-
-@Composable
-private fun TagsBottom(
-    tags: String
-) {
-    val tagsList = tags.split(",")
-    val maxItems = 4
-
-    // TODO: If not exist tags, hide this section.
-    Column {
-        Text(text = "Tags")
-        FlowRow(
-            modifier = Modifier
-                .wrapContentHeight(Alignment.Top)
-                .fillMaxWidth(),
-            maxItemsInEachRow = maxItems,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            tagsList.forEach { tag ->
-                Box(
-                    Modifier
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.outline,
-                            shape = RoundedCornerShape(10.dp)
-                        )
-                        .padding(4.dp)
-                ) {
-                    Text(
-                        text = tag,
-                        modifier = Modifier.padding(3.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Preview
-@Composable
-private fun TagsBottomPreview() {
-    TastyMealTheme {
-        TagsBottom(tags = "Meat,Casserole,Dinner,Main Course,Vegetable,Quick & Easy")
     }
 }

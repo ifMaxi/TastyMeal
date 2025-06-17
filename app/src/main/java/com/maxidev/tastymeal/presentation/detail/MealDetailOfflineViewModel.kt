@@ -28,8 +28,8 @@ class MealDetailOfflineViewModel @Inject constructor(
 
     private val mealId = checkNotNull(savedStateHandle.get<String>("mealId"))
 
-    private val _mealById: MutableStateFlow<Meal> = MutableStateFlow(Meal())
-    val mealById: StateFlow<Meal> = _mealById.asStateFlow()
+    private val _mealById: MutableStateFlow<Meal?> = MutableStateFlow(Meal())
+    val mealById: StateFlow<Meal?> = _mealById.asStateFlow()
 
     init {
         Log.d("MealDetailOfflineViewModel", "MealId: $mealId")

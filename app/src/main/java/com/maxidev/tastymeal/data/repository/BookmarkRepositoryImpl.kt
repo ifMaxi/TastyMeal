@@ -22,9 +22,9 @@ class BookmarkRepositoryImpl @Inject constructor(
             .map { it.map(MealEntity::asDomain) }
             .flowOn(Dispatchers.IO)
 
-    override fun getBookmarkById(id: String): Flow<Meal> =
+    override fun getBookmarkById(id: String): Flow<Meal?> =
         bookmarkDao.getBookmarkById(id)
-            .map(MealEntity::asDomain)
+            .map { it?.asDomain() }
             .flowOn(Dispatchers.IO)
 
     override fun isBookmark(id: String): Flow<Boolean> =
