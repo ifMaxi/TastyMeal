@@ -15,8 +15,13 @@ class NewRecipeViewModel @Inject constructor(
 ): ViewModel() {
 
     val titleTextState = TextFieldState()
+    val portionsTextState = TextFieldState()
+    val preparationTimeTextState = TextFieldState()
+    val cookingTimeTextState = TextFieldState()
+    val sourceTextState = TextFieldState()
     val instructionsTextState = TextFieldState()
     val ingredientsAndMeasuresState = TextFieldState()
+    val notesTextState = TextFieldState()
 
     fun saveRecipe(recipe: Recipe) =
         viewModelScope.launch {

@@ -9,8 +9,13 @@ import androidx.room.PrimaryKey
 data class RecipeEntity(
     @PrimaryKey(autoGenerate = true) val id: Long,
     @ColumnInfo val title: String,
+    @ColumnInfo val portions: String,
+    @ColumnInfo val preparationTime: String,
+    @ColumnInfo val cookingTime: String,
+    @ColumnInfo val source: String,
     @ColumnInfo val image: Uri?,
     @ColumnInfo val cameraImage: Uri?,
     @ColumnInfo val instructions: String,
-    @ColumnInfo val ingredientsAndMeasures: String
+    @ColumnInfo val ingredientsAndMeasures: String,
+    @ColumnInfo val notes: String
 )
