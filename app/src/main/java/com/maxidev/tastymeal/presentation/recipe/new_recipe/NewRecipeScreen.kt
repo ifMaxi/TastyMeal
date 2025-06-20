@@ -3,8 +3,6 @@
 package com.maxidev.tastymeal.presentation.recipe.new_recipe
 
 import android.Manifest
-import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -12,7 +10,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,8 +23,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.input.KeyboardActionHandler
-import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
@@ -43,7 +38,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -63,7 +57,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -75,9 +68,8 @@ import com.maxidev.tastymeal.domain.model.Recipe
 import com.maxidev.tastymeal.presentation.components.CustomButton
 import com.maxidev.tastymeal.presentation.components.CustomCenteredTopBar
 import com.maxidev.tastymeal.presentation.components.CustomFab
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
+import com.maxidev.tastymeal.presentation.components.CustomTextField
+import com.maxidev.tastymeal.utils.createImageFile
 import java.util.Objects
 
 @Composable
@@ -435,44 +427,4 @@ private fun RecipeScreenContent(
             }
         }
     }
-}
-
-@Composable
-private fun CustomTextField(
-    modifier: Modifier = Modifier,
-    state: TextFieldState,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    onKeyboardAction: KeyboardActionHandler? = null,
-    lineLimits: TextFieldLineLimits = TextFieldLineLimits.Default
-) {
-    BasicTextField(
-        modifier = modifier,
-        state = state,
-        keyboardOptions = keyboardOptions,
-        onKeyboardAction = onKeyboardAction,
-        lineLimits = lineLimits,
-        decorator = { innerTextField ->
-            Box(
-                Modifier
-                    .border(
-                        width = Dp.Hairline,
-                        color = MaterialTheme.colorScheme.outline,
-                        shape = RoundedCornerShape(10.dp)
-                    )
-                    .padding(20.dp)
-            ) { innerTextField() }
-        }
-    )
-}
-
-@SuppressLint("SimpleDateFormat")
-private fun Context.createImageFile(): File {
-    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-    val imageFileName = "JPEG_" + timeStamp + "_"
-    val image = File.createTempFile(
-        imageFileName,
-        ".jpg",
-        externalCacheDir
-    )
-    return image
 }
