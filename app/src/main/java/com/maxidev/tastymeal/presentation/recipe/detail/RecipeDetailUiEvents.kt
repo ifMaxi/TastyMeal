@@ -5,5 +5,4 @@ import com.maxidev.tastymeal.domain.model.Recipe
 sealed interface RecipeDetailUiEvents {
     data object NavigateBack: RecipeDetailUiEvents
     data class DeleteRecipe(val remove: Recipe): RecipeDetailUiEvents
-    //data class EditRecipe(val edit: Long): RecipeDetailUiEvents
 }

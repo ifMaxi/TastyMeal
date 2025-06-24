@@ -33,7 +33,6 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -41,9 +40,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -327,29 +323,17 @@ private fun ImageWithTextHeader(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TooltipBox(
-                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                tooltip = { PlainTooltip { Text(text = "Navigate Back.") } },
-                state = rememberTooltipState()
-            ) {
-                CustomIconButton(
-                    imageVector = Icons.Rounded.ArrowBackIosNew,
-                    contentDescription = "Navigate back.",
-                    onClick = navigateBack
-                )
-            }
-            TooltipBox(
-                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                tooltip = { PlainTooltip { Text(text = "Add to bookmarks.") } },
-                state = rememberTooltipState()
-            ) {
-                CustomIconButton(
-                    imageVector = Icons.Rounded.Bookmark,
-                    contentDescription = "Add to bookmarks.",
-                    tint = tint,
-                    onClick = onBookmark
-                )
-            }
+            CustomIconButton(
+                imageVector = Icons.Rounded.ArrowBackIosNew,
+                contentDescription = "Navigate back.",
+                onClick = navigateBack
+            )
+            CustomIconButton(
+                imageVector = Icons.Rounded.Bookmark,
+                contentDescription = "Add to bookmarks.",
+                tint = tint,
+                onClick = onBookmark
+            )
         }
     }
 }
