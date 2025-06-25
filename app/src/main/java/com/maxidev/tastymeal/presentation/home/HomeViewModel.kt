@@ -2,6 +2,7 @@ package com.maxidev.tastymeal.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.maxidev.tastymeal.domain.model.MinimalMeal
 import com.maxidev.tastymeal.domain.usecase.CategoriesUseCase
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -51,6 +53,7 @@ class HomeViewModel @Inject constructor(
     val categoriesFlow: StateFlow<HomeUiState> =
         categoriesUseCase.invoke()
             .map { HomeUiState(categories = it) }
+            .catch { emit(HomeUiState()) }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
@@ -62,6 +65,7 @@ class HomeViewModel @Inject constructor(
             it.copy(
                 searchByLetter = searchMealUseCase.invoke(query = letter)
                     .cachedIn(viewModelScope)
+                    .catch { emit(PagingData.empty()) }
             )
         }
     }
