@@ -3,6 +3,7 @@ package com.maxidev.tastymeal.presentation.search
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -27,20 +29,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.maxidev.tastymeal.R
 import com.maxidev.tastymeal.domain.model.MinimalMeal
 import com.maxidev.tastymeal.presentation.components.CustomAsyncImage
 import com.maxidev.tastymeal.presentation.components.CustomSearchBar
+import retrofit2.HttpException
+import java.io.IOException
 
 @Composable
 fun SearchScreen(
@@ -104,6 +111,77 @@ private fun SearchScreenContent(
                             content = pagingContent,
                             onClick = onClick
                         )
+                    }
+                }
+
+                pagingState.loadState.let { loadStates ->
+                    when {
+                        loadStates.refresh is LoadState.NotLoading && pagingState.itemCount < 1 -> {
+                            item {
+                                Box(
+                                    modifier = Modifier.fillParentMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        modifier = Modifier
+                                            .fillParentMaxWidth()
+                                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                                        text = stringResource(R.string.no_data_available),
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
+                        loadStates.refresh is LoadState.Error -> {
+                            item {
+                                Box(
+                                    modifier = Modifier.fillParentMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        modifier = Modifier
+                                            .fillParentMaxWidth()
+                                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                                        text = when ((loadStates.refresh as LoadState.Error).error) {
+                                            is HttpException -> { stringResource(R.string.something_wrong) }
+                                            is IOException -> { stringResource(R.string.internet_problem) }
+                                            else -> { stringResource(R.string.unknown_error) }
+                                        },
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
+                        loadStates.refresh is LoadState.Loading -> {
+                            item {
+                                Box(modifier = Modifier.fillParentMaxWidth()) {
+                                    CircularProgressIndicator()
+                                }
+                            }
+                        }
+                        loadStates.append is LoadState.Loading -> {
+                            item {
+                                Box(modifier = Modifier.fillParentMaxWidth()) {
+                                    CircularProgressIndicator()
+                                }
+                            }
+                        }
+                        loadStates.append is LoadState.Error -> {
+                            item {
+                                Box(
+                                    modifier = Modifier.fillParentMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        modifier = Modifier
+                                            .fillParentMaxWidth()
+                                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                                        text = stringResource(R.string.something_wrong),
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
