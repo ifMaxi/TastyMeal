@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Tasty Meal</string>
+    <string name="no_data_available">No data available</string>
+    <string name="something_wrong">Oops! Something went wrong</string>
+    <string name="internet_problem">"Couldn't reach server, check your internet connection!"</string>
+    <string name="unknown_error">"Unknown error occurred"</string>
 </resources>
