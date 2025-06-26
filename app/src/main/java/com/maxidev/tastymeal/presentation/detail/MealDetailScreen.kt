@@ -542,7 +542,7 @@ private fun IngredientsBodyPreview() {
 /* ----- Loading and error states ----- */
 
 @Composable
-private fun LoadingStateItem() {
+fun LoadingStateItem() {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
