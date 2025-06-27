@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.maxidev.tastymeal.domain.model.CategoriesMeal
 import com.maxidev.tastymeal.domain.model.MinimalMeal
 import com.maxidev.tastymeal.domain.usecase.CategoriesUseCase
 import com.maxidev.tastymeal.domain.usecase.RandomMealUseCase
@@ -11,11 +12,13 @@ import com.maxidev.tastymeal.domain.usecase.SearchMealUseCase
 import com.maxidev.tastymeal.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -35,7 +38,8 @@ class HomeViewModel @Inject constructor(
         MutableStateFlow(Resource.Loading())
     val randomFlow: StateFlow<Resource<MinimalMeal>> = _randomFlow.asStateFlow()
 
-    private val _searchByLetterState = MutableStateFlow(HomeUiState())
+    private val _searchByLetterState: MutableStateFlow<Flow<PagingData<MinimalMeal>>> =
+        MutableStateFlow(emptyFlow())
     val searchByLetterState = _searchByLetterState.asStateFlow()
 
     private val _isRefreshing = MutableStateFlow(false)
@@ -50,23 +54,21 @@ class HomeViewModel @Inject constructor(
         randomMeal()
     }
 
-    val categoriesFlow: StateFlow<HomeUiState> =
+    val categoriesFlow: StateFlow<List<CategoriesMeal>> =
         categoriesUseCase.invoke()
-            .map { HomeUiState(categories = it) }
-            .catch { emit(HomeUiState()) }
+            .map { it }
+            .catch { emit(emptyList()) }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
-                initialValue = HomeUiState()
+                initialValue = emptyList()
             )
 
     private fun mealByLetter(letter: String = "") {
         _searchByLetterState.update {
-            it.copy(
-                searchByLetter = searchMealUseCase.invoke(query = letter)
-                    .cachedIn(viewModelScope)
-                    .catch { emit(PagingData.empty()) }
-            )
+            searchMealUseCase.invoke(query = letter)
+                .cachedIn(viewModelScope)
+                .catch { emit(PagingData.empty()) }
         }
     }
 

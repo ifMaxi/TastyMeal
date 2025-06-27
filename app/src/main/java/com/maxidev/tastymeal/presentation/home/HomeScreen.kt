@@ -6,19 +6,27 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
@@ -30,31 +38,30 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
+import com.maxidev.tastymeal.R
 import com.maxidev.tastymeal.domain.model.CategoriesMeal
 import com.maxidev.tastymeal.domain.model.MinimalMeal
 import com.maxidev.tastymeal.presentation.components.CustomAsyncImage
-import com.maxidev.tastymeal.presentation.components.CustomLazyRow
-import com.maxidev.tastymeal.presentation.components.CustomLazyRowPaging
 import com.maxidev.tastymeal.utils.Resource
-
-// TODO: Shimmer loading effect in images.
+import kotlinx.coroutines.flow.Flow
+import retrofit2.HttpException
+import java.io.IOException
 
 @Composable
 fun HomeScreen(
@@ -70,7 +77,7 @@ fun HomeScreen(
     HomeScreenContent(
         isRefreshing = isRefreshing,
         homeState = randomState,
-        categories = categoriesState.categories,
+        categories = categoriesState,
         searchByLetter = searchByLetter,
         navigateToDetail = navigateToDetail,
         navigateToFilter = navigateToFilter,
@@ -85,93 +92,189 @@ private fun HomeScreenContent(
     isRefreshing: Boolean,
     homeState: Resource<MinimalMeal>,
     categories: List<CategoriesMeal>,
-    searchByLetter: HomeUiState,
+    searchByLetter: Flow<PagingData<MinimalMeal>>,
     navigateToDetail: (String) -> Unit,
     navigateToFilter: (String) -> Unit,
     pullToRefresh: () -> Unit
 ) {
-    val pagingItems = searchByLetter.searchByLetter.collectAsLazyPagingItems()
+    val pagingItems = searchByLetter.collectAsLazyPagingItems()
 
     Scaffold { innerPadding ->
-        val lazyState = rememberLazyListState()
         val pullToRefreshState = rememberPullToRefreshState()
+        val verticalScroll = rememberScrollState()
 
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = pullToRefresh,
             state = pullToRefreshState
         ) {
-            LazyColumn(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .consumeWindowInsets(innerPadding),
-                contentPadding = innerPadding,
-                state = lazyState,
-                verticalArrangement = Arrangement.spacedBy(30.dp),
+                    .consumeWindowInsets(innerPadding)
+                    .verticalScroll(verticalScroll),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 val spacing = 16.dp
 
-                item { HeaderItem() }
-
-                // Categories
-                item {
-                    CustomLazyRow(
-                        itemsContent = categories,
-                        key = { keys -> keys.idMeal },
-                        contentPadding = PaddingValues(horizontal = spacing),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(spacing),
-                        content = {
-                            CategoryItem(
-                                model = it,
-                                onClick = navigateToFilter
-                            )
-                        }
-                    )
-                }
+                HeaderItem()
 
                 // Recommended
-                item {
-                    Column(verticalArrangement = Arrangement.spacedBy(spacing)) {
-                        TitleHeader(title = "Recommendations")
-                        CustomLazyRowPaging(
-                            modifier = Modifier.fillMaxWidth(),
-                            itemsContent = pagingItems,
-                            key = { it.idMeal },
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            content = {
-                                RecommendationsItem(
-                                    model = it,
-                                    onClick = navigateToDetail
-                                )
+                TitleHeader(
+                    modifier = Modifier.align(Alignment.Start),
+                    title = "Recommendations"
+                )
+                LazyRow(
+                    state = rememberLazyListState(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    items(
+                        count = pagingItems.itemCount,
+                        key = pagingItems.itemKey { it.idMeal }
+                    ) { index ->
+                        val pagingContent = pagingItems[index]
+
+                        if (pagingContent != null) {
+                            RecommendationsItem(
+                                model = pagingContent,
+                                onClick = navigateToDetail
+                            )
+                        }
+                    }
+
+                    pagingItems.loadState.let { loadStates ->
+                        when {
+                            loadStates.refresh is LoadState.NotLoading && pagingItems.itemCount < 1 -> {
+                                item {
+                                    Box(
+                                        modifier = Modifier.fillParentMaxWidth(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            modifier = Modifier
+                                                .fillParentMaxWidth()
+                                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                                            text = stringResource(R.string.no_data_available),
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                }
                             }
-                        )
+                            loadStates.refresh is LoadState.Error -> {
+                                item {
+                                    Box(
+                                        modifier = Modifier.fillParentMaxWidth(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            modifier = Modifier
+                                                .fillParentMaxWidth()
+                                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                                            text = when ((loadStates.refresh as LoadState.Error).error) {
+                                                is HttpException -> { stringResource(R.string.something_wrong) }
+                                                is IOException -> { stringResource(R.string.internet_problem) }
+                                                else -> { stringResource(R.string.unknown_error) }
+                                            },
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                }
+                            }
+                            loadStates.refresh is LoadState.Loading -> {
+                                item {
+                                    Box(modifier = Modifier.fillParentMaxWidth()) {
+                                        CircularProgressIndicator()
+                                    }
+                                }
+                            }
+                            loadStates.append is LoadState.Loading -> {
+                                item {
+                                    Box(modifier = Modifier.fillParentMaxWidth()) {
+                                        CircularProgressIndicator()
+                                    }
+                                }
+                            }
+                            loadStates.append is LoadState.Error -> {
+                                item {
+                                    Box(
+                                        modifier = Modifier.fillParentMaxWidth(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            modifier = Modifier
+                                                .fillParentMaxWidth()
+                                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                                            text = stringResource(R.string.something_wrong),
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
                 // Random meal
-                item {
-                    Column(verticalArrangement = Arrangement.spacedBy(spacing)) {
-                        TitleHeader(title = "Something delicious for you")
-                        when (homeState) {
-                            is Resource.Error<*> -> {
-                                // TODO: Replace with a animation or a message.
-                                Text(text = homeState.message ?: "Error")
-                            }
-
-                            is Resource.Loading<*> -> {
-                                CircularProgressIndicator()
-                            }
-
-                            is Resource.Success<*> -> {
-                                RandomRecipeItem(
-                                    model = homeState.data ?: return@item,
-                                    onClick = { navigateToDetail(homeState.data.idMeal) }
-                                )
-                            }
+                TitleHeader(
+                    modifier = Modifier.align(Alignment.Start),
+                    title = "Something delicious for you"
+                )
+                when (homeState) {
+                    is Resource.Error<*> -> {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                                text = stringResource(R.string.internet_problem),
+                                textAlign = TextAlign.Center
+                            )
                         }
+                    }
+
+                    is Resource.Loading<*> -> {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            LinearProgressIndicator()
+                        }
+                    }
+
+                    is Resource.Success<*> -> {
+                        RandomRecipeItem(
+                            model = homeState.data ?: return@Column,
+                            onClick = { navigateToDetail(homeState.data.idMeal) }
+                        )
+                    }
+                }
+
+                // Categories
+                TitleHeader(
+                    modifier = Modifier.align(Alignment.Start),
+                    title = "Categories"
+                )
+                LazyHorizontalStaggeredGrid(
+                    modifier = Modifier.heightIn(max = 200.dp),
+                    rows = StaggeredGridCells.Fixed(2),
+                    state = rememberLazyStaggeredGridState(),
+                    contentPadding = PaddingValues(start = spacing, end = spacing, bottom = spacing),
+                    verticalArrangement = Arrangement.spacedBy(spacing),
+                    horizontalItemSpacing = spacing
+                ) {
+                    items(
+                        items = categories,
+                        key = { it.idMeal }
+                    ) {
+                        CategoryItem(
+                            model = it,
+                            onClick = navigateToFilter
+                        )
                     }
                 }
             }
@@ -225,9 +328,14 @@ private fun HeadersItemPreview() {
 
 @Composable
 private fun TitleHeader(
+    modifier: Modifier = Modifier,
     title: String
 ) {
-    Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .then(modifier)
+    ) {
         Text(
             text = title,
             fontSize = 20.sp,
@@ -254,26 +362,23 @@ private fun CategoryItem(
         shape = RoundedCornerShape(10.dp),
         onClick = { onClick(model.strName) }
     ) {
-        CustomAsyncImage(
-            model = model.strThumb,
-            contentDescription = model.strName,
-            contentScale = ContentScale.Crop,
-            height = 40.dp,
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(10.dp)
-                .clip(RoundedCornerShape(10.dp))
-        )
-        Text(
-            text = model.strName,
-            style = TextStyle(
-                fontWeight = FontWeight.Light,
-                fontSize = 14.sp
-            ),
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(horizontal = 10.dp, vertical = 8.dp)
-        )
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            CustomAsyncImage(
+                model = model.strThumb,
+                contentDescription = model.strName,
+                contentScale = ContentScale.Crop,
+                onClick = { onClick(model.strName) },
+                modifier = Modifier.clip(RoundedCornerShape(10.dp))
+            )
+            Text(
+                text = model.strName,
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
 
@@ -297,44 +402,34 @@ private fun RecommendationsItem(
     model: MinimalMeal,
     onClick: (String) -> Unit
 ) {
-    Card(
+    OutlinedCard(
         modifier = Modifier.padding(horizontal = 16.dp),
-        elevation = CardDefaults.cardElevation(6.dp),
+        elevation = CardDefaults.outlinedCardElevation(8.dp),
         shape = RoundedCornerShape(10.dp)
     ) {
-        Box {
-            CustomAsyncImage(
-                onClick = { onClick(model.idMeal) },
-                model = model.strMealThumb,
-                contentDescription = model.strMeal,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp))
-                    .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
-                    .drawWithContent {
-                        val colors = listOf(Color.Black, Color.Black, Color.Black, Color.Transparent)
-
-                        drawContent()
-                        drawRect(
-                            brush = Brush.verticalGradient(colors = colors),
-                            blendMode = BlendMode.DstIn
-                        )
-                    }
-            )
-            Text(
-                text = model.strMeal,
-                style = TextStyle(
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.Start
-                ),
-                maxLines = 2,
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(horizontal = 10.dp, vertical = 8.dp)
-                    .width(180.dp)
-            )
-        }
+        CustomAsyncImage(
+            onClick = { onClick(model.idMeal) },
+            model = model.strMealThumb,
+            contentDescription = model.strMeal,
+            contentScale = ContentScale.Crop,
+            height = 200.dp,
+            modifier = Modifier
+                .padding(10.dp)
+                .clip(RoundedCornerShape(10.dp))
+        )
+        Text(
+            text = model.strMeal,
+            style = TextStyle(
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Start
+            ),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .width(180.dp)
+        )
     }
 }
 
@@ -364,7 +459,8 @@ private fun RandomRecipeItem(
             .wrapContentHeight(Alignment.Top)
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(10.dp)
+        shape = RoundedCornerShape(10.dp),
+        elevation = CardDefaults.outlinedCardElevation(8.dp)
     ) {
         CustomAsyncImage(
             onClick = { onClick(model.idMeal) },
