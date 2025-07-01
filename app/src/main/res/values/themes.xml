@@ -2,4 +2,11 @@
 <resources>
 
     <style name="Theme.TastyMeal" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.CustomSplashScreenTheme" parent="Theme.SplashScreen" >
+        <item name="windowSplashScreenBackground">?android:colorBackground</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="windowSplashScreenAnimationDuration">1000</item>
+        <item name="postSplashScreenTheme">@style/Theme.TastyMeal</item>
+    </style>
 </resources>

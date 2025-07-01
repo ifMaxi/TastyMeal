@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.Surface
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.compose.setSingletonImageLoaderFactory
@@ -30,6 +31,7 @@ class MainActivity : ComponentActivity() {
         if (SDK_INT >= Q) {
             window.isNavigationBarContrastEnforced
         }
+        installSplashScreen()
         enableEdgeToEdge()
         setContent {
             TastyMealTheme {
