@@ -5,36 +5,40 @@ package com.maxidev.tastymeal.presentation.settings
 import android.content.Intent
 import android.os.Build
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
@@ -43,17 +47,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.maxidev.tastymeal.data.datastore.TypeTheme
 
 @Composable
-fun SettingsScreen(
-    viewModel: SettingsViewModel = hiltViewModel()
-) {
+fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     val dialogVisible by viewModel.dialogVisible.collectAsStateWithLifecycle()
     val isDynamic by viewModel.isDynamic.collectAsStateWithLifecycle()
     val themeType by viewModel.isTypeTheme.collectAsStateWithLifecycle()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     ScreenContent(
         isDynamic = isDynamic,
-        scrollBehavior = scrollBehavior,
         onVisibility = { viewModel.setDialogVisible(true) },
         updateDynamicTheme = { viewModel.updateIsDynamicTheme() }
     )
@@ -70,41 +70,24 @@ fun SettingsScreen(
 @Composable
 private fun ScreenContent(
     isDynamic: Boolean,
-    scrollBehavior: TopAppBarScrollBehavior,
     onVisibility: (Boolean) -> Unit,
     updateDynamicTheme: (Boolean) -> Unit
 ) {
     val context = LocalContext.current
     val browserIntent = Intent(Intent.ACTION_VIEW, "https://github.com/ifMaxi".toUri())
 
-    // TODO: Add more settings !
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(text = "Settings")
-                },
-                scrollBehavior = scrollBehavior
-            )
-        }
-    ) { innerPadding ->
+    Scaffold { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Appearance",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier
-                    .align(Alignment.Start)
-                    .padding(horizontal = 16.dp)
-            )
-            Card(
+            HeaderTitleItem(title = "Settings")
+
+            OutlinedCard(
                 modifier = Modifier.padding(16.dp),
-                elevation = CardDefaults.cardElevation(6.dp),
+                elevation = CardDefaults.outlinedCardElevation(8.dp),
                 shape = RoundedCornerShape(5)
             ) {
                 ListItem(
@@ -200,5 +183,29 @@ private fun RadioButtons(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun HeaderTitleItem(title: String) {
+    Box(
+        modifier = Modifier
+            .wrapContentHeight(Alignment.Top)
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
+        Text(
+            text = title,
+            style = TextStyle(
+                fontWeight = FontWeight.Light,
+                fontSize = 26.sp,
+                textAlign = TextAlign.Start,
+                shadow = Shadow(
+                    color = MaterialTheme.colorScheme.scrim,
+                    blurRadius = 1f
+                )
+            ),
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
     }
 }

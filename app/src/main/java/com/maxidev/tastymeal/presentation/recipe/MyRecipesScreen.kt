@@ -4,8 +4,6 @@ package com.maxidev.tastymeal.presentation.recipe
 
 import android.net.Uri
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,26 +24,20 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.rememberAsyncImagePainter
 import com.maxidev.tastymeal.domain.model.Recipe
-import com.maxidev.tastymeal.presentation.components.CustomCenteredTopBar
 import com.maxidev.tastymeal.presentation.components.CustomFab
+import com.maxidev.tastymeal.presentation.settings.HeaderTitleItem
 import com.maxidev.tastymeal.presentation.theme.TastyMealTheme
 
 @Composable
@@ -68,27 +61,12 @@ private fun ScreenContent(
     navigateToCreate: () -> Unit,
     navigateToDetail: (Long) -> Unit
 ) {
-    val topBarState = rememberTopAppBarState()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topBarState)
-
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            CustomCenteredTopBar(
-                title = {
-                    Text(text = "My recipes")
-                },
-                scrollBehavior = scrollBehavior
-            )
-        },
         floatingActionButton = {
             CustomFab(
                 onClick = navigateToCreate,
                 icon = {
-                    Icon(
-                        imageVector = Icons.Rounded.Add,
-                        contentDescription = "Create recipe"
-                    )
+                    Icon(imageVector = Icons.Rounded.Add, contentDescription = "Create recipe")
                 },
                 shape = RoundedCornerShape(10.dp),
                 elevation = FloatingActionButtonDefaults.elevation(6.dp)
@@ -100,14 +78,15 @@ private fun ScreenContent(
         LazyVerticalStaggeredGrid(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
                 .consumeWindowInsets(innerPadding),
             columns = StaggeredGridCells.Adaptive(150.dp),
             state = lazyState,
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
-            verticalItemSpacing = 10.dp,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            contentPadding = innerPadding
         ) {
+            item(span = StaggeredGridItemSpan.FullLine) {
+                HeaderTitleItem(title = "My recipes")
+            }
+
             items(
                 items = recipes,
                 key = { it.id }
@@ -131,7 +110,9 @@ private fun RecipeItem(
     onClick: () -> Unit
 ) {
     OutlinedCard(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
         elevation = CardDefaults.outlinedCardElevation(6.dp),
         shape = RoundedCornerShape(10.dp),
         onClick = onClick
@@ -152,10 +133,6 @@ private fun RecipeItem(
         if (title.isNotEmpty()) {
             Text(
                 text = title,
-                style = TextStyle(
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Light,
-                ),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier

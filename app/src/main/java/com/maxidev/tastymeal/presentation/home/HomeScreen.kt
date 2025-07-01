@@ -6,20 +6,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -127,8 +122,7 @@ private fun HomeScreenContent(
                 )
                 LazyRow(
                     state = rememberLazyListState(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     items(
                         count = pagingItems.itemCount,
@@ -259,13 +253,10 @@ private fun HomeScreenContent(
                     modifier = Modifier.align(Alignment.Start),
                     title = "Categories"
                 )
-                LazyHorizontalStaggeredGrid(
-                    modifier = Modifier.heightIn(max = 200.dp),
-                    rows = StaggeredGridCells.Fixed(2),
-                    state = rememberLazyStaggeredGridState(),
+                LazyRow(
+                    state = rememberLazyListState(),
                     contentPadding = PaddingValues(start = spacing, end = spacing, bottom = spacing),
-                    verticalArrangement = Arrangement.spacedBy(spacing),
-                    horizontalItemSpacing = spacing
+                    horizontalArrangement = Arrangement.spacedBy(spacing)
                 ) {
                     items(
                         items = categories,
@@ -362,23 +353,22 @@ private fun CategoryItem(
         shape = RoundedCornerShape(10.dp),
         onClick = { onClick(model.strName) }
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            CustomAsyncImage(
-                model = model.strThumb,
-                contentDescription = model.strName,
-                contentScale = ContentScale.Crop,
-                onClick = { onClick(model.strName) },
-                modifier = Modifier.clip(RoundedCornerShape(10.dp))
-            )
-            Text(
-                text = model.strName,
-                fontWeight = FontWeight.Medium
-            )
-        }
+        CustomAsyncImage(
+            model = model.strThumb,
+            contentDescription = model.strName,
+            contentScale = ContentScale.Crop,
+            onClick = { onClick(model.strName) },
+            modifier = Modifier
+                .padding(10.dp)
+                .clip(RoundedCornerShape(10.dp))
+        )
+        Text(
+            text = model.strName,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(10.dp)
+        )
     }
 }
 
@@ -411,7 +401,7 @@ private fun RecommendationsItem(
             onClick = { onClick(model.idMeal) },
             model = model.strMealThumb,
             contentDescription = model.strMeal,
-            contentScale = ContentScale.Crop,
+            contentScale = ContentScale.Fit,
             height = 200.dp,
             modifier = Modifier
                 .padding(10.dp)
@@ -427,7 +417,7 @@ private fun RecommendationsItem(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(bottom = 8.dp, start = 10.dp, end = 10.dp)
                 .width(180.dp)
         )
     }

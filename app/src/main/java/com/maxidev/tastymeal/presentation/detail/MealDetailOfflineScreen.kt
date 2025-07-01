@@ -149,7 +149,6 @@ private fun ScreenContentOffline(
                     }
                 }
             },
-            zoomImage = { /* TODO: Navigate to zoom. */ },
             meal = meal,
             modifier = Modifier.padding(innerPadding)
         )

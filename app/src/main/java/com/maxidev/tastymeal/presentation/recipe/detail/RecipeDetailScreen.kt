@@ -2,8 +2,10 @@
 
 package com.maxidev.tastymeal.presentation.recipe.detail
 
+import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -40,8 +43,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -51,13 +52,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.rememberAsyncImagePainter
@@ -94,11 +96,9 @@ private fun ScreenContent(
     onEvent: (RecipeDetailUiEvents) -> Unit
 ) {
     val verticalScroll = rememberScrollState()
-    val topBarState = rememberTopAppBarState()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topBarState)
     var openDialog by remember { mutableStateOf(false) }
 
-    Scaffold(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)) { innerPadding ->
+    Scaffold { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -197,13 +197,16 @@ private fun ImageHeader(
     Box {
         val photo = if (imageUri == Uri.EMPTY) cameraUri else imageUri
 
-        Image(
-            painter = rememberAsyncImagePainter(photo),
-            contentDescription = title,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-        )
+        if (photo != Uri.EMPTY) {
+            Image(
+                painter = rememberAsyncImagePainter(photo),
+                contentDescription = title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(400.dp)
+            )
+        }
         OutlinedCard(
             modifier = Modifier
                 .wrapContentHeight(Alignment.Top)
@@ -259,6 +262,9 @@ private fun OverviewTabItem(
     cookingTime: String,
     source: String
 ) {
+    val context = LocalContext.current
+    val browserIntent = Intent(Intent.ACTION_VIEW, source.toUri())
+
     OutlinedCard(
         modifier = Modifier
             .wrapContentSize()
@@ -266,6 +272,12 @@ private fun OverviewTabItem(
         shape = RoundedCornerShape(10.dp),
         elevation = CardDefaults.outlinedCardElevation(6.dp)
     ) {
+        val textProvider = "Not provided."
+        val isPortionsEmpty = portions.ifEmpty { textProvider }
+        val isCookingTimeEmpty = cookingTime.ifEmpty { textProvider }
+        val isPreparationTimeEmpty = preparationTime.ifEmpty { textProvider }
+        val isSourceEmpty = source.ifEmpty { textProvider }
+
         ListItem(
             leadingContent = {
                 Icon(
@@ -273,13 +285,7 @@ private fun OverviewTabItem(
                     contentDescription = null
                 )
             },
-            headlineContent = {
-                if (portions.isNotEmpty()) {
-                    Text(
-                        text = "Portions: $portions"
-                    )
-                }
-            }
+            headlineContent = { Text(text = "Portions: $isPortionsEmpty") }
         )
         HorizontalDivider()
         ListItem(
@@ -289,13 +295,7 @@ private fun OverviewTabItem(
                     contentDescription = null
                 )
             },
-            headlineContent = {
-                if (preparationTime.isNotEmpty()) {
-                    Text(
-                        text = "Preparation time: $preparationTime"
-                    )
-                }
-            }
+            headlineContent = { Text(text = "Preparation time: $isPreparationTimeEmpty") }
         )
         HorizontalDivider()
         ListItem(
@@ -305,29 +305,23 @@ private fun OverviewTabItem(
                     contentDescription = null
                 )
             },
-            headlineContent = {
-                if (cookingTime.isNotEmpty()) {
-                    Text(
-                        text = "Cooking time: $cookingTime"
-                    )
-                }
-            }
+            headlineContent = { Text(text = "Cooking time: $isCookingTimeEmpty") }
         )
         HorizontalDivider()
         ListItem(
+            modifier = Modifier
+                .clickable {
+                    if (source.isNotEmpty()) {
+                        context.startActivity(browserIntent)
+                    }
+                },
             leadingContent = {
                 Icon(
                     imageVector = Icons.Rounded.Link,
                     contentDescription = null
                 )
             },
-            headlineContent = {
-                if (source.isNotEmpty()) {
-                    Text(
-                        text = "Source: $source"
-                    )
-                }
-            }
+            headlineContent = { Text(text = "Source: $isSourceEmpty") }
         )
     }
 }
@@ -355,8 +349,10 @@ private fun StepsTabItem(
         shape = RoundedCornerShape(10.dp),
         elevation = CardDefaults.outlinedCardElevation(6.dp)
     ) {
+        val ifStepsIsEmpty = steps.ifEmpty { "Nothing to show here." }
+
         Text(
-            text = steps,
+            text = ifStepsIsEmpty,
             textAlign = TextAlign.Start,
             modifier = Modifier
                 .padding(16.dp)
@@ -388,8 +384,10 @@ private fun IngredientsTabItem(
         shape = RoundedCornerShape(10.dp),
         elevation = CardDefaults.outlinedCardElevation(6.dp)
     ) {
+        val ifIngredientsIsEmpty = ingredients.ifEmpty { "Nothing to show here." }
+
         Text(
-            text = ingredients,
+            text = ifIngredientsIsEmpty,
             textAlign = TextAlign.Start,
             modifier = Modifier
                 .padding(16.dp)
@@ -418,8 +416,10 @@ private fun NotesTabItem(
         shape = RoundedCornerShape(10.dp),
         elevation = CardDefaults.outlinedCardElevation(6.dp)
     ) {
+        val ifNotesIsEmpty = notes.ifEmpty { "Nothing to show here." }
+
         Text(
-            text = notes,
+            text = ifNotesIsEmpty,
             textAlign = TextAlign.Start,
             modifier = Modifier
                 .padding(16.dp)

@@ -193,7 +193,6 @@ private fun ScreenContent(
                             }
                         }
                     },
-                    zoomImage = { /* TODO: Navigate to zoom. */ },
                     meal = meal.data ?: return@Scaffold,
                     modifier = Modifier.padding(innerPadding)
                 )
@@ -209,7 +208,6 @@ fun MealDetailContent(
     modifier: Modifier = Modifier,
     meal: Meal,
     tint: Color,
-    zoomImage: (String) -> Unit,
     onShare: () -> Unit,
     onBookmark: () -> Unit,
     onLink: () -> Unit,
@@ -230,7 +228,6 @@ fun MealDetailContent(
             strMeal = meal.strMeal,
             strMealThumb = meal.strMealThumb,
             strCategory = meal.strCategory,
-            zoomImage = zoomImage,
             tint = tint,
             onBookmark = onBookmark,
             navigateBack = navigateBack
@@ -278,7 +275,6 @@ private fun ImageWithTextHeader(
     strMealThumb: String,
     strCategory: String,
     tint: Color,
-    zoomImage: (String) -> Unit,
     onBookmark: () -> Unit,
     navigateBack: () -> Unit
 ) {
@@ -287,7 +283,6 @@ private fun ImageWithTextHeader(
             model = strMealThumb,
             contentDescription = strMeal,
             contentScale = ContentScale.Crop,
-            onClick = { zoomImage(strMealThumb) },
             modifier = Modifier.fillMaxWidth()
         )
         OutlinedCard(
@@ -346,7 +341,6 @@ private fun ImageWithTextHeaderPreview() {
             strMeal = "Lorem Impsum",
             strMealThumb = "Image",
             strCategory = "Category",
-            zoomImage = {},
             onBookmark = {},
             navigateBack = {},
             tint = Color.Red

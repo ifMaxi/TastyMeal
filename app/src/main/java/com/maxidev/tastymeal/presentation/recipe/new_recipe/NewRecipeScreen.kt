@@ -42,8 +42,6 @@ import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -54,7 +52,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -66,9 +63,9 @@ import coil3.compose.rememberAsyncImagePainter
 import com.maxidev.tastymeal.BuildConfig
 import com.maxidev.tastymeal.domain.model.Recipe
 import com.maxidev.tastymeal.presentation.components.CustomButton
-import com.maxidev.tastymeal.presentation.components.CustomCenteredTopBar
 import com.maxidev.tastymeal.presentation.components.CustomFab
 import com.maxidev.tastymeal.presentation.components.CustomTextField
+import com.maxidev.tastymeal.presentation.settings.HeaderTitleItem
 import com.maxidev.tastymeal.utils.createImageFile
 import java.util.Objects
 
@@ -126,8 +123,6 @@ private fun RecipeScreenContent(
     var expanded by remember { mutableStateOf(false) }
     var singlePhotoPickerImage by remember { mutableStateOf<Uri?>(Uri.EMPTY) }
     var capturedImage by remember { mutableStateOf<Uri>(Uri.EMPTY) }
-    val topBarState = rememberTopAppBarState()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topBarState)
 
     // Photo picker
     val simplePhotoPickerLauncher = rememberLauncherForActivityResult(
@@ -153,13 +148,6 @@ private fun RecipeScreenContent(
     )
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            CustomCenteredTopBar(
-                title = { Text(text = "New recipe") },
-                scrollBehavior = scrollBehavior
-            )
-        },
         floatingActionButton = {
             CustomFab(
                 onClick = {
@@ -197,6 +185,8 @@ private fun RecipeScreenContent(
         ) {
             var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
             val tabList = listOf("Overview", "Instructions", "Ingredients", "Notes")
+
+            HeaderTitleItem(title = "New Recipe")
 
             PrimaryScrollableTabRow(
                 selectedTabIndex = selectedIndex,

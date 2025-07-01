@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -31,8 +32,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,7 +41,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -53,7 +53,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.maxidev.tastymeal.domain.model.Meal
 import com.maxidev.tastymeal.presentation.components.CustomAsyncImage
-import com.maxidev.tastymeal.presentation.components.CustomCenteredTopBar
 import com.maxidev.tastymeal.presentation.components.CustomIconButton
 import com.maxidev.tastymeal.presentation.theme.TastyMealTheme
 import kotlinx.coroutines.launch
@@ -80,29 +79,9 @@ private fun BookmarkContent(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val snackBarHostState = remember { SnackbarHostState() }
-    val topBarState = rememberTopAppBarState()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topBarState)
     var openDialog by remember { mutableStateOf(false) }
 
-    Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
-        topBar = {
-            CustomCenteredTopBar(
-                title = {
-                    Text(text = "Bookmarks")
-                },
-                actions = {
-                    CustomIconButton(
-                        imageVector = Icons.Rounded.DeleteSweep,
-                        contentDescription = "Clear all bookmarks",
-                        onClick = { openDialog = true }
-                    )
-                },
-                scrollBehavior = scrollBehavior
-            )
-        }
-    ) { innerPadding ->
+    Scaffold(snackbarHost = { SnackbarHost(hostState = snackBarHostState) }) { innerPadding ->
         val lazyState = rememberLazyListState()
 
         LazyColumn(
@@ -111,8 +90,13 @@ private fun BookmarkContent(
                 .consumeWindowInsets(innerPadding),
             state = lazyState,
             contentPadding = innerPadding,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            item {
+                HeaderTitleWithButton(onClick = { openDialog = true })
+            }
+            item { Spacer(modifier = Modifier.size(20.dp)) }
+
             items(
                 items = allBookmarks,
                 key = { it.idMeal }
@@ -169,6 +153,37 @@ private fun BookmarkContent(
                 shape = RoundedCornerShape(10.dp)
             )
         }
+    }
+}
+
+@Composable
+private fun HeaderTitleWithButton(onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .wrapContentHeight(Alignment.Top)
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Bookmarks",
+            style = TextStyle(
+                fontWeight = FontWeight.Light,
+                fontSize = 26.sp,
+                textAlign = TextAlign.Start,
+                shadow = Shadow(
+                    color = MaterialTheme.colorScheme.scrim,
+                    blurRadius = 1f
+                )
+            ),
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
+        CustomIconButton(
+            imageVector = Icons.Rounded.DeleteSweep,
+            contentDescription = "Clear all bookmarks",
+            onClick = onClick
+        )
     }
 }
 
