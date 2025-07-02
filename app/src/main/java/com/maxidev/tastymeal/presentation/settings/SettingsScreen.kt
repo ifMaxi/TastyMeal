@@ -34,13 +34,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -178,9 +173,7 @@ private fun RadioButtons(
                     selected = (it.value == state.selectedRadio),
                     onClick = { updateThemeType(it.value) }
                 )
-                Text(
-                    text = it.title
-                )
+                Text(text = it.title)
             }
         }
     }
@@ -196,15 +189,7 @@ fun HeaderTitleItem(title: String) {
     ) {
         Text(
             text = title,
-            style = TextStyle(
-                fontWeight = FontWeight.Light,
-                fontSize = 26.sp,
-                textAlign = TextAlign.Start,
-                shadow = Shadow(
-                    color = MaterialTheme.colorScheme.scrim,
-                    blurRadius = 1f
-                )
-            ),
+            style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(vertical = 8.dp)
         )
     }

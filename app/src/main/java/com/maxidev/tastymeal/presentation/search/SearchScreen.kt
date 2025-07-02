@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -30,13 +31,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
@@ -211,10 +209,7 @@ private fun CardMealItem(
             Column {
                 Text(
                     text = content.strMeal,
-                    style = TextStyle(
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium
-                    ),
+                    style = MaterialTheme.typography.bodyLarge,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
@@ -223,7 +218,7 @@ private fun CardMealItem(
                 )
                 Text(
                     text = content.strCategory,
-                    style = TextStyle(fontWeight = FontWeight.Light),
+                    style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier
                         .padding(horizontal = 16.dp, vertical = 10.dp)
                 )
@@ -266,10 +261,7 @@ private fun SearchStandByItem() {
     ) {
         Text(
             text = "Find something delicious",
-            style = TextStyle(
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Medium
-            )
+            style = MaterialTheme.typography.titleLarge
         )
         Spacer(modifier = Modifier.size(20.dp))
         Image(

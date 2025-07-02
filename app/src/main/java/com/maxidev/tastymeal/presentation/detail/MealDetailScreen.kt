@@ -32,6 +32,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
@@ -52,7 +53,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -233,6 +233,7 @@ fun MealDetailContent(
             navigateBack = navigateBack
         )
         PrimaryTabRow(
+            containerColor = MaterialTheme.colorScheme.background,
             selectedTabIndex = selectedIndex,
             tabs = {
                 tabList.forEachIndexed { index, tab ->
@@ -296,7 +297,7 @@ private fun ImageWithTextHeader(
         ) {
             Text(
                 text = strMeal,
-                fontWeight = FontWeight.Medium,
+                style = MaterialTheme.typography.titleLarge,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
@@ -305,7 +306,7 @@ private fun ImageWithTextHeader(
             Spacer(modifier = Modifier.size(6.dp))
             Text(
                 text = strCategory,
-                fontSize = 14.sp,
+                style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(start = 16.dp, end = 16.dp, bottom = 6.dp)
@@ -421,8 +422,7 @@ private fun InstructionsBody(
     ) {
         Text(
             text = "Instructions",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.align(Alignment.Start)
         )
         Spacer(modifier = Modifier.size(20.dp))
@@ -434,8 +434,7 @@ private fun InstructionsBody(
             ) {
                 Text(
                     text = "Step ${index + 1}",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium,
+                    style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 6.dp)
@@ -496,8 +495,7 @@ private fun IngredientsBody(
     ) {
         Text(
             text = "Ingredients",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.align(Alignment.Start)
         )
         Spacer(modifier = Modifier.size(20.dp))
@@ -512,7 +510,7 @@ private fun IngredientsBody(
                     trailingContent = {
                         Text(
                             text = quantity,
-                            fontSize = 14.sp
+                            style = MaterialTheme.typography.bodyMedium
                         )
                     }
                 )

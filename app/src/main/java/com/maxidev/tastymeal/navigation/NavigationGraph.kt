@@ -48,9 +48,7 @@ fun NavigationGraph(
                                 contentDescription = topLevelRoute.name
                             )
                         },
-                        label = {
-                            Text(text = topLevelRoute.name)
-                        }
+                        label = { Text(text = topLevelRoute.name) }
                     )
                 }
             }

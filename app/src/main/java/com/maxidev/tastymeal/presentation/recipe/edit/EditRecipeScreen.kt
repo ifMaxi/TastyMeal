@@ -38,6 +38,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -56,7 +57,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -217,6 +217,7 @@ private fun RecipeScreenContent(
             HeaderTitleItem(title = "Edit Recipe")
 
             PrimaryScrollableTabRow(
+                containerColor = MaterialTheme.colorScheme.background,
                 selectedTabIndex = selectedIndex,
                 tabs = {
                     tabList.forEachIndexed { index, tab ->
@@ -242,11 +243,9 @@ private fun RecipeScreenContent(
                         verticalArrangement = Arrangement.spacedBy(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        val fontSize = 20.sp
-
                         Text(
                             text = "Title",
-                            fontSize = fontSize,
+                            style = MaterialTheme.typography.titleLarge,
                             modifier = Modifier.align(Alignment.Start)
                         )
                         CustomTextField(
@@ -256,7 +255,7 @@ private fun RecipeScreenContent(
                         )
                         Text(
                             text = "Portions",
-                            fontSize = fontSize,
+                            style = MaterialTheme.typography.titleLarge,
                             modifier = Modifier.align(Alignment.Start)
                         )
                         CustomTextField(
@@ -266,7 +265,7 @@ private fun RecipeScreenContent(
                         )
                         Text(
                             text = "Preparation time (Optional)",
-                            fontSize = fontSize,
+                            style = MaterialTheme.typography.titleLarge,
                             modifier = Modifier.align(Alignment.Start)
                         )
                         CustomTextField(
@@ -276,7 +275,7 @@ private fun RecipeScreenContent(
                         )
                         Text(
                             text = "Cooking time (Optional)",
-                            fontSize = fontSize,
+                            style = MaterialTheme.typography.titleLarge,
                             modifier = Modifier.align(Alignment.Start)
                         )
                         CustomTextField(
@@ -286,7 +285,7 @@ private fun RecipeScreenContent(
                         )
                         Text(
                             text = "Source (Optional)",
-                            fontSize = fontSize,
+                            style = MaterialTheme.typography.titleLarge,
                             modifier = Modifier.align(Alignment.Start)
                         )
                         CustomTextField(

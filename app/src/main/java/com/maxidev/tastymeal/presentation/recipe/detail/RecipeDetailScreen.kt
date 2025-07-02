@@ -54,7 +54,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -119,6 +118,7 @@ private fun ScreenContent(
             val tabList = listOf("Overview", "Instructions", "Ingredients", "Notes")
 
             PrimaryScrollableTabRow(
+                containerColor = MaterialTheme.colorScheme.background,
                 selectedTabIndex = selectedIndex,
                 tabs = {
                     tabList.forEachIndexed { index, tab ->
@@ -218,7 +218,7 @@ private fun ImageHeader(
         ) {
             Text(
                 text = title,
-                fontWeight = FontWeight.Medium,
+                style = MaterialTheme.typography.titleLarge,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)

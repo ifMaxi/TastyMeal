@@ -33,16 +33,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
@@ -284,28 +280,12 @@ private fun HeaderItem() {
     ) {
         Text(
             text = "Welcome!",
-            style = TextStyle(
-                fontWeight = FontWeight.Light,
-                fontSize = 26.sp,
-                textAlign = TextAlign.Start,
-                shadow = Shadow(
-                    color = MaterialTheme.colorScheme.scrim,
-                    blurRadius = 1f
-                )
-            ),
+            style = MaterialTheme.typography.headlineLarge,
             modifier = Modifier.padding(vertical = 8.dp)
         )
         Text(
             text = "What would you like to cook today?",
-            style = TextStyle(
-                fontWeight = FontWeight.Light,
-                fontSize = 22.sp,
-                textAlign = TextAlign.Start,
-                shadow = Shadow(
-                    color = MaterialTheme.colorScheme.scrim,
-                    blurRadius = 1f
-                )
-            ),
+            style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.padding(vertical = 8.dp)
         )
     }
@@ -329,8 +309,7 @@ private fun TitleHeader(
     ) {
         Text(
             text = title,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Medium
+            style = MaterialTheme.typography.titleLarge
         )
     }
 }
@@ -364,7 +343,7 @@ private fun CategoryItem(
         )
         Text(
             text = model.strName,
-            fontWeight = FontWeight.Medium,
+            style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(10.dp)
@@ -409,11 +388,7 @@ private fun RecommendationsItem(
         )
         Text(
             text = model.strMeal,
-            style = TextStyle(
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.Start
-            ),
+            style = MaterialTheme.typography.bodyLarge,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
@@ -465,7 +440,7 @@ private fun RandomRecipeItem(
         )
         Text(
             text = model.strMeal,
-            fontWeight = FontWeight.Medium,
+            style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier
                 .padding(horizontal = 10.dp, vertical = 6.dp)
         )
