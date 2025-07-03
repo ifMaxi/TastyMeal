@@ -15,7 +15,7 @@ The project consists of implementing a simple, intuitive, and fast way to search
 - A search feature.
 - The ability to change the app's themes.
 
-## Tech stack
+## Build with
 
 - Kotlin
 - Jetpack Compose
