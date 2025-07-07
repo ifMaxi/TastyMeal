@@ -48,8 +48,7 @@ The pattern used for this project is MVVM (Model-View-ViewModel) which is a wide
 No prerequisites are required. Only the latest version of Android Studio.
 
 ## Video
-
-TODO...
+<video src="https://github.com/user-attachments/assets/e3dd8e02-adfd-4320-9f15-5094e7a40f4c" width="300" />
 
 ## Screenshots
 
