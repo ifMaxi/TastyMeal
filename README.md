@@ -3,49 +3,113 @@
 # Tasty meal
 [![](https://img.shields.io/badge/android-000000.svg?style=for-the-badge&logo=android)](https://)
 
-An app that lets you easily find recipes from [The Meal Database](https://www.themealdb.com/) API, and also lets you create and manage your recipes.
+An application designed to help users easily discover recipes using ***[The Meal Database](https://www.themealdb.com/)***, while also allowing them to create, manage, and store their own recipes.
 
-The project consists of implementing a simple, intuitive, and fast way to search for recipes. Although the number of recipes is limited by the REST API, the user will be able to create and save their own recipes, as well as save their favorite recipes from the API and view them offline.
+The project focuses on delivering a simple, intuitive, and responsive recipe search experience. Although the number of recipes available through the **REST API** is limited, users can enhance their experience by:
+
+- Creating and storing custom recipes.
+
+- Saving their favorite API-sourced recipes for **offline access**.
+
+- Managing a personalized recipe collection within the app.
 
 ## Features
 
-- Access to certain app features in case you don't have an internet connection. 
-- Allows you to save your favorite recipes from the API into a database.
-- Lets you create your own recipes, including adding photos from the camera or gallery.
-- A search feature.
-- The ability to change the app's themes.
+- **Offline access** to certain features, even when there's no internet connection.
+
+- **Save** favorite recipes retrieved from the API to a local database for quick, offline access.
+
+- **Create** your own recipes, with the option to add photos from your device's camera or gallery.
+
+- **Built-in** search function for easy recipe finding.
+
+- **Light, dark, and dynamic themes** adapt the app's appearance based on system settings or user preferences. On devices running Android 12 or higher, Material You is used to apply dynamic colors based on the system wallpaper.
+
+> [!NOTE]
+> No prerequisites or API key are required. Only the latest version of Android Studio.
 
 ## Build with
 
 - Kotlin
+  
 - Jetpack Compose
+  
 - Material 3
-- Jetpack libraries
-  - Data Store
-  - Splash screen
-  - Navigation
-  - Paging 3
-  - Room database
+  
+- ***Jetpack libraries***
+  - *Data Store*
+  - *Splash screen*
+  - *Navigation*
+  - *Paging 3*
+  - *Room database*
+
 - Hilt
+  
 - Coil image library
+  
 - Kotlin serialization
+  
 - Kotlin coroutines
+  
 - OkHttp/Retrofit
+  
 - Rest Api
 
 ## Architecture
 
-The pattern used for this project is MVVM (Model-View-ViewModel) which is a widely used architectural pattern in Android development that promotes separation of concerns, testability, and maintainability. It divides an application into three interconnected parts:
+### MVVM (Model-View-ViewModel)
 
-1. **Model**: Represents the data and business logic of the application. It's responsible for fetching, storing, and manipulating data. This might include data classes, repositories, and data sources like databases or network APIs.
-2. **View**: In Compose, the View is represented by composable functions. These functions describe the UI declaratively, defining how it should look based on the current state. Instead of directly manipulating UI elements, composable functions recompose when the underlying data changes.
-3. **ViewModel**: Acts as an intermediary between the Model and the View. It exposes data from the Model in a way that's easily consumable by the View. It also handles user interactions from the View and updates the Model accordingly. The ViewModel is lifecycle-aware, meaning it survives configuration changes like screen rotations.
+This project uses the **MVVM (Model-View-ViewModel)** architectural pattern, a widely adopted structure in modern Android development. MVVM encourages **separation of concerns**, improves **scalability**, enables **easier testing**, and promotes better **maintainability** of the codebase.
+
+The architecture is divided into three main components:
+
+### 1. Model
+
+The **Model** represents the data layer and business logic. Its responsibilities include:
+
+- Fetching, storing, and processing data.
+
+- Interacting with external data sources, such as local databases (e.g., Room) or web services (REST APIs).
+
+- Containing elements such as:
+
+ - Data classes
+
+ - Repositories
+
+ - Data sources (remote or local)
+
+### 2. View
+
+The **View**, implemented using Jetpack Compose, is responsible for rendering the user interface. Key characteristics:
+
+- Built using ***composable functions*** that define the UI declaratively.
+
+- Reactively updates when the underlying observed data changes.
+
+- Does not include business logic or directly access the data layer.
+
+### 3. ViewModel
+
+The **ViewModel** serves as a bridge between the Model and the View. Its primary role is to:
+
+- Expose UI-ready data using `StateFlow`, `LiveData`, or other observable mechanisms.
+
+- Handle user interactions and UI events.
+
+- **Be lifecycle-aware**, allowing it to survive configuration changes such as screen rotations.
+
+### Benefits of MVVM
+
+- **Clear separation of responsibilities**: improves code readability, maintainability, and scalability.
+
+- **Reactive, decoupled UI**: the View observes data without knowing its source.
+
+- **Improved testability**: ViewModels and Models can be tested independently.
+
+- **Composable-friendly**: aligns naturally with Jetpack Compose’s declarative and reactive approach.
 
 ![Mvvm arch](https://github.com/user-attachments/assets/011add8b-cd32-4ae7-b78e-60a2ca578a59)
-
-## Requirements
-
-No prerequisites are required. Only the latest version of Android Studio.
 
 ## Screenshots
 
